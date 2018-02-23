@@ -1,0 +1,46 @@
+<mainFunction> -> MAIN SQO SQC <stmtAndFunctionDefs> END .
+<stmtAndFunctionDefs> -> <stmtOrFunctionDef> <moreStmtOrFunctionDef> .
+<moreStmtOrFunctionDef> -> <stmtAndFunctionDefs> | EPSILON .
+<stmtOrFunctionDef> -> <stmt> | <functionDef> .
+<stmt> -> <declarationStmt> | <assignmentStmt_type1> | <assignmentStmt_type2> | <ifStmt> | <ioStmt> | <funCallStmt> SEMICOLON .
+<functionDef> -> FUNCTION SQO <parameter_list> SQC ASSIGNOP FUNID SQO <parameter_list> SQC <stmtAndFunctionDefs> END SEMICOLON .
+<parameter_list> -> <type> ID <remainingList> .
+<type> -> INT | REAL | STRING | MATRIX .
+<remainingList> -> COMMA <parameter_list> | EPSILON .
+<declarationStmt> -> <type> <var_list> SEMICOLON .
+<var_list> -> ID <more_ids> .
+<more_ids> -> COMMA <var_list> | EPSILON .
+<assignmentStmt_type1> -> <leftHandSide_singleVar> ASSIGNOP <rightHandSide_type1> SEMICOLON .
+<assignmentStmt_type2> -> <leftHandSide_listVar> ASSIGNOP <rightHandSide_type2> SEMICOLON .
+<leftHandSide_singleVar> -> ID .
+<leftHandSide_listVar> -> SQO <var_list> SQC .
+<rightHandSide_type1> -> <arithmeticExpression> | <sizeExpression> | <funCallStmt> .
+<rightHandSide_type2> -> <sizeExpression> | <funCallStmt> .
+<sizeExpression> -> SIZE ID .
+<ifStmt> -> IF OP <booleanExpression> CL <stmt> <otherStmts> <elseStmt> .
+<elseStmt> -> ELSE <stmt> <otherStmts> ENDIF SEMICOLON | ENDIF SEMICOLON .
+<otherStmts> -> <stmt> <otherStmts> | EPSILON .
+<ioStmt> -> READ OP ID CL SEMICOLON | PRINT OP ID CL SEMICOLON .
+<funCallStmt> -> FUNID OP <inputParameterList> CL .
+<inputParameterList> -> <var> <listVar> | EPSILON .
+<listVar> -> COMMA <inputParameterList> | EPSILON .
+<arithmeticExpression> -> <arithmeticTerm> <moreTerms_one> .
+<moreTerms_one> -> <operator_lowPrecedence> <arithmeticExpression> | EPSILON .
+<arithmeticTerm> -> <arithmeticFactor> <moreTerms_two> .
+<moreTerms_two> -> <operator_highPrecedence> <arithmeticTerm> | EPSILON .
+<arithmeticFactor> -> OP <arithmeticExpression> CL | <var> .
+<operator_lowPrecedence> -> PLUS | MINUS .
+<operator_highPrecedence> -> MUL | DIV .
+<booleanExpression> -> OP <booleanExpression> CL <logicalOp> OP <booleanExpression> CL .
+<booleanExpression> -> NOT OP <booleanExpression> CL .
+<booleanExpression> -> <constrainedVars> <relationalOp> <constrainedVars> .
+<constrainedVars> -> ID | NUM | RNUM .
+<var> -> ID | NUM | RNUM | <matrixElement> | STR | <matrix> .
+<matrix> -> SQO <rows> SQC .
+<rows> -> <row> <moreRows> .
+<moreRows> -> SEMICOLON <rows> | EPSILON .
+<row> -> NUM <remainingColElements> .
+<remainingColElements> -> COMMA NUM <remainingColElements> |  EPSILON .
+<matrixElement> -> ID SQO NUM COMMA NUM SQC .
+<logicalOp> -> AND | OR .
+<relationalOp> -> LT | LE | EQ | GT | GE | NE .

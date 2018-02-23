@@ -109,6 +109,7 @@ void removeComments(char *testcaseFile, char *cleanFile){
                 {
                     if(c == '\n')
                     {
+						putchar('\n');
                         break;
                     }
                 }
@@ -143,44 +144,10 @@ tokenInfo getNextToken(FILE *fp){
 					case '.': state = 5; break;
 					case '<': state = 6; break;
 					case '>': state = 7; break;
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 8; break;
+					case '0' ... '9': state = 8; break;
 					case '_': state = 9; break;
 					case '"': state = 10; break;
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z': state = 11; break;
+					case 'a' ... 'z':state = 11; break;
 					case '[': tk.type = SQO; tk.lexeme[lexemecount++] ='\0' ; tk.name="SQO"; return tk;
 					case ']': tk.type = SQC; tk.lexeme[lexemecount++] ='\0' ; tk.name="SQC"; return tk;
 					case '(': tk.type = OP; tk.lexeme[lexemecount++] ='\0' ; tk.name="OP"; return tk;
@@ -301,32 +268,14 @@ tokenInfo getNextToken(FILE *fp){
 				break;
 			case 8: // 1 (number)
 				switch(ch){
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 8; break;
+					case '0' ... '9': state = 8; break;
 					case '.': state = 32; break;
 					default : currentpos--; tk.type = NUM; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"NUM"); return tk;
 				}
 				break;
 			case 32: //RNUM a.
 				switch(ch){
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 33; break;
+					case '0' ... '9': state = 33; break;
 					case 'a':
 					case 'o':
 					case 'n': currentpos--; tk.type = NUM; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"NUM"); return tk;
@@ -335,16 +284,7 @@ tokenInfo getNextToken(FILE *fp){
 				break;
 			case 33: //RNUM a.b
 				switch(ch){
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
+					case '0' ... '9': tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
 					default : //check
 								currentpos--;tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
 				}
@@ -378,17 +318,9 @@ tokenInfo getNextToken(FILE *fp){
 					case 'w':
 					case 'x':
 					case 'y':
-					case 'z': state = 38; break;
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 55; break;
+					case 'z': 
+					case 'A' ... 'Z':state = 38; break;
+					case '0' ... '9': state = 55; break;
 					default : state = 56; break
 				}
 				break;
@@ -423,17 +355,9 @@ tokenInfo getNextToken(FILE *fp){
 					case 'w':
 					case 'x':
 					case 'y':
-					case 'z': 
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 38; break;
+					case 'z':
+					case 'A' ... 'Z':
+					case '0' ... '9': state = 38; break;
 					case '[':
 					case '(': 
 					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
@@ -468,16 +392,8 @@ tokenInfo getNextToken(FILE *fp){
 					case 'x':
 					case 'y':
 					case 'z': 
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 38; break;
+					case 'A' ... 'Z':
+					case '0' ... '9': state = 38; break;
 					case '[':
 					case '(': 
 					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
@@ -487,20 +403,8 @@ tokenInfo getNextToken(FILE *fp){
 			case 36: //_mai
 				switch(ch){
 					case 'n': state = 37; break;
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'o':
+					case 'a' ... 'm':
+					case 'o' ... 'z':
 					case 'p':
 					case 'q':
 					case 'r':
@@ -512,16 +416,8 @@ tokenInfo getNextToken(FILE *fp){
 					case 'x':
 					case 'y':
 					case 'z': 
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 38; break;
+					case 'A' ... 'Z':
+					case '0' ... '9': state = 38; break;
 					case '[':
 					case '(': 
 					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
@@ -530,42 +426,9 @@ tokenInfo getNextToken(FILE *fp){
 				break;
 			case 37: //_main
 				switch(ch){
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z': 
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 38; break;
+					case 'a' ... 'z':
+					case 'A' ... 'Z':
+					case '0' ... '9': state = 38; break;
 					case '[':
 					case '(': 
 					case ' ': currentpos--;tk.type = MAIN; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"MAIN"); return tk;
@@ -574,42 +437,8 @@ tokenInfo getNextToken(FILE *fp){
 				break;
 			case 38: //_funntion
 				switch(ch){
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z': 
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': state = 38; break;
+					case 'a' ... 'z':
+					case '0' ... '9': state = 38; break;
 					case '[':
 					case '(': 
 					case ' ':if (lexemecount<20){
@@ -625,32 +454,7 @@ tokenInfo getNextToken(FILE *fp){
 				printf("\n %d: Lexical Error: Function Name '%s' exceeds the maximum length limit of 20",tk.lineno,tk.lexeme); return tk;
 			case 10: // "
 				switch(ch){
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z':
+					case 'a' ... 'z':
 					case ' ': state=39; break;
 					case '"': state = 51; break;  //"" length=2, no string
 					default : state = 52; break;
@@ -658,33 +462,7 @@ tokenInfo getNextToken(FILE *fp){
 				break;
 			case 39: //"a
 				switch(ch){
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z':
-					case ' ': state=39; break;
+					case 'a' ... 'z': state=39; break;
 					case '"':{ 
 						if (lexemecount<=20){
 							tk.type = STR; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"STR"); return tk;
@@ -705,42 +483,8 @@ tokenInfo getNextToken(FILE *fp){
 			
 			case 11: 
 				switch(ch){
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z': state=11; break;
-					case '0':
-					case '1':
-					case '2':
-					case '3':
-					case '4':
-					case '5':
-					case '6':
-					case '7':
-					case '8':
-					case '9': 
+					case 'a' ... 'z': state=11; break;
+					case '0' ... '9': 
 					default : currentpos--;
 						if (lexemecount<20){
 							tk.lexeme[lexemecount-1] ='\0' ;
@@ -765,3 +509,4 @@ tokenInfo getNextToken(FILE *fp){
 
 
 // We knoe the length error at 20 only, no need to go all through the string
+// loook for how code will give state when \n in between strings
