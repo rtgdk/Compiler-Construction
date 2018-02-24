@@ -8,8 +8,8 @@ typedef struct grammarnode{
 	int type;  //type =1 for non terminal, type=0 for terminal, type=2 for |, type=3 for epsilon
 	int value; // -3 for epsilon, -2 for |, -1 for terminal, value is the index in hashtable
 	char name[40];
-	struct grammernode *next;
-	struct grammernode *prev;
+	struct grammarnode *next;
+	struct grammarnode *prev;
 } grammarnode;
 
 typedef grammarnode *GrammarNode;
@@ -33,10 +33,12 @@ Rule* grammer[NO_OF_RULES];
 
 typedef struct hashtable{
 	int type;
-	Rule ruleNode;  // NULL for term
+	int ruleNode;  // NULL for term
 	char name[50];
 	struct hashtable* next;
 } hashtable;
+
+Rule* parsetable[NO_OF_RULES][NO_OF_TERMINALS];
 
 hashtable* HashTable[hashtablesize];
 #endif PARSERDEFINATIONHEADER
