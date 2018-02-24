@@ -1,0 +1,48 @@
+mainFunction  MAIN SQO SQC stmtsAndFunctionDefs END .
+stmtsAndFuntionDefs  stmtOrFunctionDef moreStmtOrFunctionDef .
+moreStmtOrFunctionDef  stmtOrFunctionDef moreStmtOrFunctionDef | eps .
+stmtOrFunctionDef  stmt | functionDef .
+stmt  declarationStmt | assignmentStmt_type1 | assignmentStmt_type2 | ifStmt | ioStmt | funCallStmt SEMICOLON .
+functionDef  FUNCTION SQO parameter_list SQC ASSIGNOP FUNID SQO parameter_list SQC stmtsAndFunctionDefs END SEMICOLON .
+parameter_list  type ID remainingList .
+type  INT | REAL | STRING | MATRIX .
+remainingList  COMMA parameter_list | eps .
+declarationStmt  type var_list SEMICOLON .
+var_list  ID more_ids .
+more_ids  COMMA var_list | eps .
+assignmentStmt_type1  leftHandSide_singleVar ASSIGNOP rightHandSide_type1 SEMICOLON .
+assignmentStmt_type2  leftHandSide_listVar ASSIGNOP rightHandSide_type2 SEMICOLON .
+leftHandSide_singleVar  ID .
+leftHandSide_listVar  SQO var_list SQC .
+rightHandSide_type1  arithmeticExpression | sizeExpression | funCallStmt .
+rightHandSide_type2  sizeExpression | funCallStmt .
+sizeExpression  SIZE ID .
+ifStmt  baseIfStmt checkElse .
+baseIfStmt  IF OP booleanExpression CL stmt otherStmts .
+checkElse  ELSE stmt otherStmts ENDIF SEMICOLON | ENDIF SEMICOLON .
+otherStmts  stmt otherStmts | eps .
+ioStmt  READ OP ID CL SEMICOLON | PRINT OP ID CL SEMICOLON .
+funCallStmt  FUNID OP inputParameterList CL .
+inputParameterList  var listVar | eps .
+listVar  COMMA inputParameterList | eps .
+arithmeticExpression  arithmeticTerm moreTerms_one .
+moreTerms_one  operator_lowPrecedence arithmeticExpression | eps .
+arithemticTerm  factor moreTerms_two .
+moreTerms_two  operator_highPrecdence arithmeticTerm | eps .
+factor  OP arithmeticExpression CL | var . 
+operator_lowPrecedence  PLUS | MINUS .
+operator_highPrecedence  MUL | DIV .
+booleanExpression  OP booleanExpression CL logicalOp OP booleanExpression CL .
+booleanExpression  constrainedVars relationalOp constrainedVars .
+booleanExpression  NOT OP booleanExpression CL .
+constrainedVars  ID | NUM | RNUM .
+var  ID matrixElement | NUM | RNUM | STR | matrix .
+matrix  SQO rows SQC .
+rows  row rowTwo .
+rowTwo  SEMICOLON rows | eps .
+row   NUM rowOne .
+rowOne  remainingColElements | eps .
+remainingColElements  COMMA NUM remainingColElements | eps .
+matrixElement  ID SQO NUM COMMA NUM SQC | eps .
+logicalOp  AND | OR .
+relationalOp  LT | LE | EQ | GT | GE | NE .

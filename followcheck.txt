@@ -1,0 +1,46 @@
+  DOLLAR     tempend  
+  END     tempend  
+  END     tempend  
+  END   INT   REAL   STRING   MATRIX   ID   IF   READ   PRINT   FUNID   FUNCTION   SQO tempend  
+  END   INT   REAL   STRING   MATRIX   ID   IF   READ   PRINT   FUNID   FUNCTION SQO ELSE   ENDIF tempend  
+  END   INT   REAL   STRING   MATRIX   ID IF   READ   PRINT   FUNID   FUNCTION   SQO   tempend  
+  SQC     tempend  
+  ID     tempend  
+  SQC     tempend  
+  END   INT   REAL   STRING   MATRIX   ID   IF   READ   PRINT   FUNID   FUNCTION SQO ELSE   ENDIF tempend  
+  SEMICOLON  SQC    tempend  
+  SEMICOLON   SQC    tempend  
+  END   INT   REAL   STRING   MATRIX   ID   IF   READ   PRINT   FUNID   FUNCTION SQO ELSE   ENDIF tempend  
+  END   INT   REAL   STRING   MATRIX   ID   IF   READ   PRINT   FUNID   FUNCTION SQO ELSE   ENDIF tempend  
+  ASSIGNOP     tempend  
+  ASSIGNOP     tempend  
+  SEMICOLON     tempend  
+  SEMICOLON     tempend  
+  SEMICOLON     tempend  
+  END   INT   REAL   STRING   MATRIX   ID   IF   READ   PRINT   FUNID   FUNCTION SQO ELSE   ENDIF tempend  
+  END   INT   REAL   STRING   MATRIX   ID   IF   READ   PRINT   FUNID   FUNCTION SQO ELSE   ENDIF tempend  
+  ENDIF ELSE     tempend  
+  END   INT   REAL   STRING   MATRIX   ID   IF   READ   PRINT   FUNID   FUNCTION SQO ELSE   ENDIF  tempend  
+  SEMICOLON     tempend  
+  CL     tempend  
+  CL     tempend  
+  SEMICOLON   CL    tempend  
+  SEMICOLON  CL    tempend  
+  PLUS   MINUS   SEMICOLON CL     tempend  
+  PLUS   MINUS   SEMICOLON CL     tempend  
+  MUL   DIV   PLUS   MINUS   SEMICOLON CL   tempend  
+  OP   ID   NUM   RNUM   STR   SQO   tempend  
+  OP   ID   NUM   RNUM   STR   SQO   tempend  
+  CL     tempend  
+  LT   LE   EQ   GT   GE   NE   CL  tempend  
+  SEMICOLON   COMMA   MUL   DIV   PLUS   MINUS CL  tempend  
+  SEMICOLON   COMMA   MUL   DIV   PLUS   MINUS CL  tempend  
+  SEMICOLON   COMMA   MUL   DIV   PLUS   MINUS CL  tempend  
+  SQC     tempend  
+  SQC     tempend  
+  SEMICOLON SQC     tempend  
+  SEMICOLON SQC     tempend  
+  SEMICOLON SQC     tempend  
+  OP     tempend  
+  ID   NUM   RNUM   tempend
+
