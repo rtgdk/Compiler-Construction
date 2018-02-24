@@ -31,9 +31,7 @@
 <arithmeticFactor> -> OP <arithmeticExpression> CL | <var> .
 <operator_lowPrecedence> -> PLUS | MINUS .
 <operator_highPrecedence> -> MUL | DIV .
-<booleanExpression> -> OP <booleanExpression> CL <logicalOp> OP <booleanExpression> CL .
-<booleanExpression> -> NOT OP <booleanExpression> CL .
-<booleanExpression> -> <constrainedVars> <relationalOp> <constrainedVars> .
+<booleanExpression> -> OP <booleanExpression> CL <logicalOp> OP <booleanExpression> CL | NOT OP <booleanExpression> CL | <constrainedVars> <relationalOp> <constrainedVars> .
 <constrainedVars> -> ID | NUM | RNUM .
 <var> -> ID <matrixElement> | NUM | RNUM | STR | <matrix> .
 <matrix> -> SQO <rows> SQC .
