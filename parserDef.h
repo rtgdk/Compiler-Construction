@@ -2,7 +2,7 @@
 #define PARSERDEFINATIONHEADER
 #include "lexerDef.h"
 #define NO_OF_RULES 46
-
+#define hashtablesize 100 
 // can also use enum in plase of int type
 typedef struct grammarnode{
 	int type;  //type =1 for non terminal, type=0 for terminal, type=2 for |, type=3 for epsilon
@@ -30,4 +30,13 @@ typedef struct rulenode{
 } Rule;
 
 Rule* grammer[NO_OF_RULES];
+
+typedef struct hashtable{
+	int type;
+	Rule ruleNode;  // NULL for term
+	char name[50];
+	struct hashtable* next;
+} hashtable;
+
+hashtable* HashTable[hashtablesize];
 #endif PARSERDEFINATIONHEADER

@@ -35,12 +35,12 @@
 <booleanExpression> -> NOT OP <booleanExpression> CL .
 <booleanExpression> -> <constrainedVars> <relationalOp> <constrainedVars> .
 <constrainedVars> -> ID | NUM | RNUM .
-<var> -> ID | NUM | RNUM | <matrixElement> | STR | <matrix> .
+<var> -> ID <matrixElement> | NUM | RNUM | STR | <matrix> .
 <matrix> -> SQO <rows> SQC .
 <rows> -> <row> <moreRows> .
 <moreRows> -> SEMICOLON <rows> | EPSILON .
 <row> -> NUM <remainingColElements> .
 <remainingColElements> -> COMMA NUM <remainingColElements> |  EPSILON .
-<matrixElement> -> ID SQO NUM COMMA NUM SQC .
+<matrixElement> -> ID SQO NUM COMMA NUM SQC | EPSILON .
 <logicalOp> -> AND | OR .
 <relationalOp> -> LT | LE | EQ | GT | GE | NE .
