@@ -12,8 +12,10 @@ unsigned long hash_table_keywords[NO_OF_KEYWORDS];
 
 
 typedef enum{
-	
-}character;
+	END , INT , REAL , STRING , MATRIX , MAIN , IF , ELSE , ENDIF , READ , PRINT , FUNCTION ,
+	PLUS, MINUS, MUL,	DIV, LT, LE, GT, GE, EQ, NE,
+	SEMICOLON, SQO, SQC, CL, OP, COMMA, SIZE, ASSIGNOP, AND, OR, NOT, NUM, RNUM, FUNID, STR, ID,EOF1,ERROR
+} character;
 
 
 typedef struct

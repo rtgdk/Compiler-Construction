@@ -1,9 +1,12 @@
 #ifndef PARSERDEFINATIONHEADER
 #define PARSERDEFINATIONHEADER
 #include "lexerDef.h"
-#define NO_OF_RULES 46
+#define NO_OF_RULES 44
 #define hashtablesize 100 
-// can also use enum in plase of int type
+#define NO_OF_TERMINALS=40;
+#define NO_OF_NONTERMINALS=44;
+
+// can also use enum in place of int type
 typedef struct grammarnode{
 	int type;  //type =1 for non terminal, type=0 for terminal, type=2 for |, type=3 for epsilon
 	int value; // -3 for epsilon, -2 for |, -1 for terminal, value is the index in hashtable

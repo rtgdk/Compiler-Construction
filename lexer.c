@@ -5,8 +5,11 @@
 #include "lexer.h"
 
 #define MAX_SIZE 30
-char buffer[MAX_SIZE];
+char buffer2[MAX_SIZE];
 int buffersize
+int lineno = 1;
+int currentpos=0;
+int buffer_size = -1;
 
 /***
 1. start
@@ -61,17 +64,38 @@ int buffersize
 60. Invalid ID size
 **/
 
-char* keywords[]={"END","INT","REAL","STRING","MATRIX","MAIN","IF","ELSE","ENDIF","READ","PRINT","FUNCTION"}
+char* keywords[]={"end","int","real","string","matrix","main","if","else","endif","read","print","function"};
+char* keywords2[]={"END","INT","REAL","STRING","MATRIX","MAIN","IF","ELSE","ENDIF","READ","PRINT","FUNCTION"};
 
+/*
+find if the token is a keyword, if true return the name
+*/
 int isKeyword(tokenInfo tk,char* name){
+	int i;
+	int noOfKeywords = 12;
+	//printf("In keyword %s",tk.lexeme);
 	for(i=0;i<noOfKeywords;i++){
 		if(strcmp(keywords[i],tk.lexeme)==0){
-			name = keywords[i];
+			//printf("Matched");
+			//name = keywords[i];
+			strcpy(name,keywords2[i]);
 			return i;
 		}
 	}
 	return -1; //not a keyword
 }
+
+// FILE *getStream(FILE *fp,char* B,int k)
+    // {
+        // int file_size;                                //size of the file
+        // file_size=fread(B,sizeof(char),k,fp);   //allocating buffer2 with file contents
+        // if(feof(fp))B[file_size]='$';            //assigning bottom-marker of buffer2 with $
+        // return fp;
+    // }
+
+/*
+return charcater of the file one by one
+*/	
 FILE *getStream(FILE *fp,int k) //k is buffersize
     {
         size_t file_size;                                //size of the file
@@ -90,7 +114,27 @@ FILE *getStream(FILE *fp,int k) //k is buffersize
 		if(feof(fp))B[file_size]='$';            //assigning bottom-marker of buffer with $
         return fp;
     }
-	
+
+/*
+return charcater of the file one by one
+*/	
+char getChar(FILE* f)
+{
+    if(buffer_size == -1 || currentpos == buffer_size)
+    {
+        buffer_size = fread(buffer2 , sizeof(char) , MAX_SIZE , f);
+        currentpos = 0;
+    }
+
+    if(buffer_size == 0)
+        return '\0';
+    else
+        return buffer2[currentpos++];
+}
+
+/*
+print code after removing comments
+*/	
 void removeComments(char *testcaseFile, char *cleanFile){
 	FILE* f1 = fopen(testcasefile , "r");
     if(f1 == NULL)
@@ -119,18 +163,31 @@ void removeComments(char *testcaseFile, char *cleanFile){
     fclose(f1);
 }
 
-
+/*
+Return token one by one of the file fp
+*/	
 tokenInfo getNextToken(FILE *fp){
 	tokenInfo tk;
 	char ch;
 	int state = 1;
-	int lineno = 1;
-	currentpos = 0;
-	lexemecount = 0;
+	//currentpos = 40;
+	int lexemecount = 0;
+	int MAXIMUM=30;
+	//fp=getStream(fp,buffer2,MAXIMUM);
 	while(1){
-		fp = getStream(fp,30);
-		ch = buffer[currentpos++];
-		tk.lexeme[lexemecount++] = ch;
+		//fp = getStream(fp,30);
+
+		// if(currentpos>MAXIMUM-1)
+  //       {
+  //       	currentpos=0;
+  //           //index=0; k=1;
+		// 	strcpy(buffer2,"");
+  //           fp=getStream(fp,buffer2,MAXIMUM);
+  //       }
+		//printf("%s this read\n",buffer2);
+		//ch = buffer2[currentpos++];
+		ch = getChar(fp);  
+		//printf("State %d -- %c->",state,ch);
 		tk.lineno = lineno;
 		switch(state)
 		{
@@ -138,226 +195,180 @@ tokenInfo getNextToken(FILE *fp){
 				switch(ch){
 					case '\n': lineno++;   //no break ?
 					case ' ':
-					case '\t': state = 2; break;
+					case '\t': state = 1; break;
 					case '#': state = 3; break;
-					case '=': state = 4; break;
-					case '.': state = 5; break;
-					case '<': state = 6; break;
-					case '>': state = 7; break;
-					case '0' ... '9': state = 8; break;
-					case '_': state = 9; break;
-					case '"': state = 10; break;
-					case 'a' ... 'z':state = 11; break;
-					case '[': tk.type = SQO; tk.lexeme[lexemecount++] ='\0' ; tk.name="SQO"; return tk;
-					case ']': tk.type = SQC; tk.lexeme[lexemecount++] ='\0' ; tk.name="SQC"; return tk;
-					case '(': tk.type = OP; tk.lexeme[lexemecount++] ='\0' ; tk.name="OP"; return tk;
-					case ')': tk.type = CL; tk.lexeme[lexemecount++] ='\0' ; tk.name="CL"; return tk;
-					case ';': tk.type = SEMICOLON; tk.lexeme[lexemecount++] ='\0' ; tk.name="SEMICOLON"; return tk;
-					case ',': tk.type = COMMA; tk.lexeme[lexemecount++] ='\0' ; tk.name="COMMA"; return tk;
-					case '+': tk.type = PLUS; tk.lexeme[lexemecount++] ='\0' ; tk.name="PLUS"; return tk;
-					case '-': tk.type = MINUS; tk.lexeme[lexemecount++] ='\0' ; tk.name="MINUS"; return tk;
-					case '*': tk.type = MUL; tk.lexeme[lexemecount++] ='\0' ; tk.name="MUL"; return tk;
-					case '/': tk.type = DIV; tk.lexeme[lexemecount++] ='\0' ; tk.name="DIV"; return tk;
-					case '@': tk.type = SIZE; tk.lexeme[lexemecount++] ='\0' ; tk.name="SIZE"; return tk;
+					case '=': tk.lexeme[lexemecount++] = ch; state = 4; break;
+					case '.': tk.lexeme[lexemecount++] = ch; state = 5; break;
+					case '<': tk.lexeme[lexemecount++] = ch; state = 6; break;
+					case '>': tk.lexeme[lexemecount++] = ch; state = 7; break;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 8; break;
+					case '_': tk.lexeme[lexemecount++] = ch; state = 9; break;
+					case '"': tk.lexeme[lexemecount++] = ch; state = 10; break;
+					case 'a' ... 'z':tk.lexeme[lexemecount++] = ch; state = 11; break;
+					case '[': tk.type = SQO; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"SQO") ;return tk;
+					case ']': tk.type = SQC; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"SQC"); return tk;
+					case '(': tk.type = OP; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"OP"); return tk;
+					case ')': tk.type = CL; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"CL"); return tk;
+					case ';': tk.type = SEMICOLON; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"SEMICOLON"); return tk;
+					case ',': tk.type = COMMA; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"COMMA"); return tk;
+					case '+': tk.type = PLUS; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"PLUS"); return tk;
+					case '-': tk.type = MINUS; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"MINUS"); return tk;
+					case '*': tk.type = MUL; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"MUL"); return tk;
+					case '/': tk.type = DIV; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"DIV"); return tk;
+					case '@': tk.type = SIZE; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"SIZE"); return tk;
+					case '\0': tk.type = EOF1; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0'; strcpy(tk.name,"EOF");return tk;
+					default : tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0'; tk.type=ERROR; printf("\n%d: Lexical Error: Unknown Symbol '%s'. ",tk.lineno,tk.lexeme); return tk; 
 				}
 				break;
-			
-			case 2: //\t, space, \n
+				// state 2 not needed as \t \n not capture anything
+				// case 2: //\t, space, \n
+				// switch(ch){
+					// case '\n': lineno++;
+					// case ' ':
+                    // case '\t': state=2; break;   // just break, capture 2 spaces/tabs/lines
+					// case '\0': tk.type = EOF1; strcpy(tk.lexeme , "EOF"); return tk;
+					// default: currentpos--; state=1; break;
+				// }
+				// break;
+				case 3: // #
 				switch(ch){
-					case '\n': lineno++;
-					case ' ':
-                    case '\t': break;   // just break, capture 2 spaces/tabs/lines
-					case '\0': tk.type = EOF; strcpy(tk.lexeme , "EOF"); return tk;
-					default: currentpos--; state=1; break;
-				}
-				break;
-			
-			case 3: // #
-				switch(ch){
-					case '\n': lineno++; state = 1; break;
-					// case '\0':  // error? break;
+					case '\n': lineno++; state = 1; break; //tk.type = COMMENT; strcpy(tk.name,"COMMENT") ;tk.lexeme[lexemecount++] ='\0'; return tk;//tk.type = COMMENT; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"COMMENT") ;return tk; //
+					case '\0':  return;// error? break;
 					default : state = 3; break; //can use while loop here
 				}
 				break;
-			case 4: // =
+				case 4: // =
+					switch(ch){
+						case '=': tk.type = EQ; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"EQ"); return tk;
+						case '/': tk.lexeme[lexemecount++] = ch; state = 23; break;
+						//case '\0': //error ? 
+						default : currentpos--; tk.type = ASSIGNOP; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"ASSIGNOP"); return tk;
+					}
+					break;
+				case 23: // =/
+					switch(ch){
+						case '=': tk.type = EQ; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"NE"); return tk;
+						default : currentpos--; state=59; break;
+					}
+				case 59:
+					currentpos--; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0'; printf("\n%d: Lexical Error: Invalid Relational operator '%s' ",tk.lineno,tk.lexeme); return ;
+				case 5: // .
+					switch(ch){
+						case 'a': tk.lexeme[lexemecount++] = ch; state=24; break;
+						case 'o': tk.lexeme[lexemecount++] = ch; state=27; break;
+						case 'n': tk.lexeme[lexemecount++] = ch; state=29; break;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 24: //.a
+					switch(ch){
+						case 'n': tk.lexeme[lexemecount++] = ch; state=25; break;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 25: //.an
+					switch(ch){
+						case 'd': tk.lexeme[lexemecount++] = ch; state=26; break;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 26: //.and
+					switch(ch){
+						case '.': tk.type = AND; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"AND"); return tk;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 27: //.o
+					switch(ch){
+						case 'r': tk.lexeme[lexemecount++] = ch; state=28; break;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 28: //.or
+					switch(ch){
+						case '.': tk.type = OR; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"OR"); return tk;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 29: //.n
+					switch(ch){
+						case 'o': tk.lexeme[lexemecount++] = ch; state=30; break;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 30: //.no
+					switch(ch){
+						case 't': tk.lexeme[lexemecount++] = ch; state=31; break;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 31: //.not
+					switch(ch){
+						case '.': tk.type = NOT; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"NOT"); return tk;
+						default : currentpos--; state=58; break;
+					}
+					break;
+				case 58:
+					currentpos--; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; printf("\n%d: Lexical Error: Invalid Logical operator '%s'",tk.lineno,tk.lexeme); return ; 
+				case 6: // <
+					switch(ch){
+						case '=': tk.type = LE; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"LE"); return tk;
+						//case '\0': state=59; break;
+						default : currentpos--; tk.type = LT; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"LT"); return tk;
+					}
+					break;
+				case 7: // >
+					switch(ch){
+						case '=': tk.type = GE; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"GE"); return tk;
+						//case '\0': // error
+						default : currentpos--; tk.type = GT; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"GT"); return tk;
+					}
+					break;
+				case 8: // 1 (number)
 				switch(ch){
-					case '=': tk.type = EQ; tk.lexeme[lexemecount++] ='\0' ; tk.name="EQ"; return tk;
-					case '/': state = 23; break;
-					//case '\0': //error ? 
-					default : currentpos--; tk.type = ASSIGNOP; tk.lexeme[lexemecount-1] ='\0' ; tk.name="ASSIGNOP"; return tk;
-				}
-				break;
-			case 23: // =/
-				switch(ch){
-					case '=': tk.type = EQ; tk.lexeme[lexemecount++] ='\0' ; tk.name="NE"; return tk;
-					default : state=59; break;
-				}
-			case 59:
-				printf("\n %d: Lexical Error: Invalid Relational operator",tk.lineno); return tk; 
-			case 5: // .
-				switch(ch){
-					case 'a': state=24; break;
-					case 'o': state=27; break;
-					case 'n': state=29; break;
-					default : state=58; break;
-				}
-				break;
-			case 24: //.a
-				switch(ch){
-					case 'n': state=25; break;
-					default : state=58; break;
-				}
-				break;
-			case 25: //.an
-				switch(ch){
-					case 'd': state=26; break;
-					default : state=58; break;
-				}
-				break;
-			case 26: //.and
-				switch(ch){
-					case '.': tk.type = AND; tk.lexeme[lexemecount++] ='\0' ; tk.name="AND"; return tk;
-					default : state=58; break;
-				}
-				break;
-			case 27: //.o
-				switch(ch){
-					case 'r': state=28; break;
-					default : state=58; break;
-				}
-				break;
-			case 28: //.or
-				switch(ch){
-					case '.': tk.type = OR; tk.lexeme[lexemecount++] ='\0' ; tk.name="OR"; return tk;
-					default : state=58; break;
-				}
-				break;
-			case 29: //.n
-				switch(ch){
-					case 'o': state=29; break;
-					default : state=58; break;
-				}
-				break;
-			case 30: //.no
-				switch(ch){
-					case 't': state=30; break;
-					default : state=58; break;
-				}
-				break;
-			case 31: //.not
-				switch(ch){
-					case '.': tk.type = NOT; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"NOT"); return tk;
-					default : state=58; break;
-				}
-				break;
-			case 58:
-				printf("\n %d: Lexical Error: Invalid Logical operator",tk.lineno); return tk; 
-			case 6: // <
-				switch(ch){
-					case '=': tk.type = LE; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"LE"); return tk;
-					//case '\0': state=59; break;
-					default : currentpos--; tk.type = LT; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"LT"); return tk;
-				}
-				break;
-			case 7: // >
-				switch(ch){
-					case '=': tk.type = GE; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"GE"); return tk;
-					//case '\0': // error
-					default : currentpos--; tk.type = GT; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"GT"); return tk;
-				}
-				break;
-			case 8: // 1 (number)
-				switch(ch){
-					case '0' ... '9': state = 8; break;
-					case '.': state = 32; break;
-					default : currentpos--; tk.type = NUM; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"NUM"); return tk;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 8; break;
+					case '.': tk.lexeme[lexemecount++] = ch;  state = 32; break;
+					default : currentpos--; tk.type = NUM; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"NUM"); return tk;
 				}
 				break;
 			case 32: //RNUM a.
 				switch(ch){
-					case '0' ... '9': state = 33; break;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 33; break;
 					case 'a':
 					case 'o':
-					case 'n': currentpos--; tk.type = NUM; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"NUM"); return tk;
+					case 'n': currentpos--; currentpos--; tk.type = NUM; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"NUM"); return tk;
 					default : state = 54; break;
 				}
 				break;
 			case 33: //RNUM a.b
 				switch(ch){
-					case '0' ... '9': tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
+					case '0' ... '9': tk.type = RNUM; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
 					default : //check
 								currentpos--;tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
 				}
 				break;
 			case 54: //number.<char>
-				printf("\n %d: Lexical Error: Invalid Real Number '%s'",tk.lineno,tk.lexeme); return tk; // or maybe space not given
+				tk.type=ERROR; printf("\n%d: Lexical Error: Invalid Real Number '%s'",tk.lineno,tk.lexeme); return tk; // or maybe space not given
 			case 9: // _
 				switch(ch){
-					case 'm': state = 34; break;
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z': 
-					case 'A' ... 'Z':state = 38; break;
+					case 'm': tk.lexeme[lexemecount++] = ch; state = 34; break;
+					case 'a' ... 'l':
+					case 'n' ... 'z': 
+					case 'A' ... 'Z':tk.lexeme[lexemecount++] = ch; state = 38; break;
 					case '0' ... '9': state = 55; break;
-					default : state = 56; break
+					default : state = 56; break;
 				}
 				break;
 			case 55:
-				printf("\n %d: Lexical Error: Invalid Function Name '%s'. _ cannot be followed by a number",tk.lineno,tk.lexeme); return tk;
+				tk.type=ERROR; printf("\n%d: Lexical Error: Invalid Function Name '%s'. _ cannot be followed by a number",tk.lineno,tk.lexeme); return tk;
 			case 56:
-				printf("\n %d: Lexical Error: Function Name '%s' contain invalid character",tk.lineno,tk.lexeme); return tk;
+				tk.type=ERROR; printf("\n%d: Lexical Error: Function Name '%s' contain invalid character",tk.lineno,tk.lexeme); return tk;
 			case 34: // _m
 				switch(ch){
-					case 'a': state = 35; break;
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'i':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z':
+					case 'a': tk.lexeme[lexemecount++] = ch; state = 35; break;
+					case 'b' ... 'z':
 					case 'A' ... 'Z':
-					case '0' ... '9': state = 38; break;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 					case '[':
 					case '(': 
 					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
@@ -366,34 +377,11 @@ tokenInfo getNextToken(FILE *fp){
 				break;
 			case 35: // _ma
 				switch(ch){
-					case 'i': state = 36; break;
-					case 'a':
-					case 'b':
-					case 'c':
-					case 'd':
-					case 'e':
-					case 'f':
-					case 'g':
-					case 'h':
-					case 'j':
-					case 'k':
-					case 'l':
-					case 'm':
-					case 'n':
-					case 'o':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z': 
+					case 'i': tk.lexeme[lexemecount++] = ch; state = 36; break;
+					case 'a' ... 'h':
+					case 'j' ... 'z':
 					case 'A' ... 'Z':
-					case '0' ... '9': state = 38; break;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 					case '[':
 					case '(': 
 					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
@@ -402,22 +390,11 @@ tokenInfo getNextToken(FILE *fp){
 				break;
 			case 36: //_mai
 				switch(ch){
-					case 'n': state = 37; break;
+					case 'n': tk.lexeme[lexemecount++] = ch; state = 37; break;
 					case 'a' ... 'm':
-					case 'o' ... 'z':
-					case 'p':
-					case 'q':
-					case 'r':
-					case 's':
-					case 't':
-					case 'u':
-					case 'v':
-					case 'w':
-					case 'x':
-					case 'y':
-					case 'z': 
+					case 'o' ... 'z': 
 					case 'A' ... 'Z':
-					case '0' ... '9': state = 38; break;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 					case '[':
 					case '(': 
 					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
@@ -428,20 +405,21 @@ tokenInfo getNextToken(FILE *fp){
 				switch(ch){
 					case 'a' ... 'z':
 					case 'A' ... 'Z':
-					case '0' ... '9': state = 38; break;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 38; break;
 					case '[':
 					case '(': 
-					case ' ': currentpos--;tk.type = MAIN; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"MAIN"); return tk;
+					case ' ': currentpos--;tk.type = MAIN; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"MAIN"); return tk;
 					default: state = 56; break;
 				}
 				break;
 			case 38: //_funntion
 				switch(ch){
 					case 'a' ... 'z':
-					case '0' ... '9': state = 38; break;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 					case '[':
 					case '(': 
-					case ' ':if (lexemecount<20){
+					case ' ': currentpos--;
+							if (lexemecount<20){
 								tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
 							 }
 							 else{
@@ -451,21 +429,22 @@ tokenInfo getNextToken(FILE *fp){
 				}
 				break;
 			case 57:
-				printf("\n %d: Lexical Error: Function Name '%s' exceeds the maximum length limit of 20",tk.lineno,tk.lexeme); return tk;
+				tk.type=ERROR; printf("\n%d: Lexical Error: Function Name '%s' exceeds the maximum length limit of 20",tk.lineno,tk.lexeme); return tk;
 			case 10: // "
 				switch(ch){
 					case 'a' ... 'z':
-					case ' ': state=39; break;
+					case ' ': tk.lexeme[lexemecount++] = ch; state=39; break;
 					case '"': state = 51; break;  //"" length=2, no string
 					default : state = 52; break;
 				}
 				break;
 			case 39: //"a
 				switch(ch){
-					case 'a' ... 'z': state=39; break;
+					case 'a' ... 'z': 
+					case ' ': tk.lexeme[lexemecount++] = ch;  state=39; break;
 					case '"':{ 
-						if (lexemecount<=20){
-							tk.type = STR; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"STR"); return tk;
+						if (lexemecount<=21){
+							tk.type = STR; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"STR"); return tk;
 						}
 						else{
 							state = 53; break;
@@ -475,19 +454,19 @@ tokenInfo getNextToken(FILE *fp){
 				}
 				break;
 			case 51:
-				printf("\n %d: Lexical Error: Empty String",tk.lineno); return tk;
+				tk.type=ERROR; printf("\n%d: Lexical Error: Empty String",tk.lineno); return tk;
 			case 52:
-				printf("\n %d: Lexical Error: String contains invalid character",tk.lineno); return tk;
+				tk.type=ERROR; printf("\n%d: Lexical Error: String contains invalid character",tk.lineno); return tk;
 			case 53:
-				printf("\n %d: Lexical Error: String '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return tk; //maybe add \0 in lexeme
+				tk.type=ERROR; printf("\n%d: Lexical Error: String '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return tk; //maybe add \0 in lexeme
 			
 			case 11: 
 				switch(ch){
-					case 'a' ... 'z': state=11; break;
-					case '0' ... '9': 
-					default : currentpos--;
-						if (lexemecount<20){
-							tk.lexeme[lexemecount-1] ='\0' ;
+					case 'a' ... 'z': 
+					case 'A' ... 'Z': tk.lexeme[lexemecount++] = ch;  state=11; break;
+					case '0' ... '9': tk.lexeme[lexemecount++] = ch;
+						if (lexemecount<=20){
+							tk.lexeme[lexemecount] ='\0' ;
 							char name[50];
 							int type = isKeyword(tk,name);
 							if(type!=-1){
@@ -496,17 +475,79 @@ tokenInfo getNextToken(FILE *fp){
 							else{
 								tk.type = ID;  strcpy(tk.name,"ID");
 							}
+							return tk;
 						}
 						else{
 							state=60; break;
 						}
+						break;
+					default : {
+						currentpos--;
+						if (lexemecount<=20){
+							tk.lexeme[lexemecount] ='\0' ;
+							char name[50];
+							int type = isKeyword(tk,name);
+							if(type!=-1){
+								tk.type = (character)type; strcpy(tk.name,name);
+							}
+							else{
+								tk.type = ID;  strcpy(tk.name,"ID");
+							}
+							return tk;
+						}
+						else{
+							state=60; break;
+						}
+						break;
+					}
 				}
 				break;
 			case 60:
-				printf("\n %d: Lexical Error: ID '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return tk; 
+				tk.type=ERROR; printf("\n%d: Lexical Error: ID '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return tk;
+		}
 	}
 }
 
+int printtokens(FILE *fp)
+{
+  tokenInfo to;
+  FILE *pFile;
+  pFile = fp;
+  printf("TOKEN  line  Name  LEXEME\n");
+  to=getNextToken(pFile);
+  while(to.type!=EOF1 && strcmp(to.name,"")!=0)
+    {
+    	//printf("here");
+      
+   //    if(to.flag==0)
+   //    {
+	  // printf("\n");
+   //        int i;
+   //        for(i=0; to.lexeme[i]!='\0'; ++i);
+   //        i--;
+   //        int k=0;
+   //        printf("%8d%14s%6s",to.line_no,to.name," ");//print to screen
+   //        for(k=0;k<=i;k++)
+   //        {
+   //            char ch=to.lexeme[k];
+   //            if(isAllow(to.lexeme[k])&&!(isWhitespace(to.lexeme[k])))
+   //            if(k==i&&to.lexeme[k]!='\0'){printf("%c",to.lexeme[k]);}
+   //            else if(k<i){printf("%c",to.lexeme[k]);}
+   //        }
+   //    }
+    	if(to.type!=ERROR)
+     	 printf("%d  %d  %s  %s\n",to.type,to.lineno,to.name,to.lexeme);
+      to=getNextToken(pFile);
+   }
+   //printf("%s",to.name);
+  fclose (pFile);
+  return 0;
+}
+//int main(){
+//	printf("yeha");
+//	FILE *fp = fopen("a.txt","r");
+//	printtokens(fp);
+//}
 
 // We knoe the length error at 20 only, no need to go all through the string
 // loook for how code will give state when \n in between strings
