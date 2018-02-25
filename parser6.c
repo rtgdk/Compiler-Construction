@@ -4,8 +4,8 @@
 #include <string.h>
 #define hashtablesize 103 
 #define NO_OF_RULES 44
-int NO_OF_TERMINALS=0;
-int NO_OF_NONTERMINALS=1;
+int NO_OF_TERMINALS=40;
+int NO_OF_NONTERMINALS=44;
 
 typedef struct grammarnode{
 	int type;  //type =1 for non terminal, type=0 for terminal, type=2 for or1, type=3 for epsilon
@@ -101,8 +101,8 @@ void printHashTable(){
 GrammarNode makenode(int type,int value,char* name){
 	GrammarNode g = (GrammarNode)malloc(sizeof(struct grammarnode));
 	g->type = type;
-	if(type==0) NO_OF_TERMINALS++;
-	else if(type==1) NO_OF_NONTERMINALS++;
+	//if(type==0) NO_OF_TERMINALS++;
+	//else if(type==1) NO_OF_NONTERMINALS++;
 	g->value = value;
 	strcpy(g->name,name);
 	// if(type==1){
@@ -473,6 +473,7 @@ void findfollow(char* name){
 			}
 		}
 	}
+	followMatrix[hashNode->ruleNode][39]=0;
 	grammer[hashNode->ruleNode]->followcalculated=1;
 }
 
@@ -521,7 +522,7 @@ void initParseTable(){
 	parsetable = (GrammarNode**)malloc(sizeof(GrammarNode*)*NO_OF_RULES);
 	int i,j;
 	for (i=0;i<NO_OF_RULES;i++){
-		parsetable[i] = (GrammarNode)malloc(sizeof(grammarnode)*NO_OF_TERMINALS);
+		parsetable[i] = (GrammarNode)malloc(sizeof(grammarnode)*(NO_OF_TERMINALS));
 		for(j=0;j<NO_OF_TERMINALS;j++){
 			parsetable[i][j]=NULL;
 		}
@@ -584,7 +585,7 @@ void createParseTable(){
 				}
 			}
 			if (p[NO_OF_TERMINALS-1]==1) {// can be without ==
-				for(j=0 ; j<NO_OF_TERMINALS; j++) { //remove eps from followset
+				for(j=0 ; j<NO_OF_TERMINALS-1; j++) { //remove eps from followset
 	                if(followMatrix[i][j]==1)
 	                    parsetable[i][j] = temp;
 	            }
@@ -597,13 +598,15 @@ void createParseTable(){
 				temp = temp->next;
 				//start = 
 			}
-		}		
+		}
+		parsetable[i][39]=NULL;	
 	}
+	
 }
 
 void printParseTable(){
 	int i,j;
-	printf("\n parse table\n");
+	printf("\n parse table %d\n",NO_OF_TERMINALS);
 	for (i=0;i<NO_OF_RULES;i++){
 		printf("\n%s-->",grammer[i]->head->name);
 		for(j=0;j<NO_OF_TERMINALS;j++){

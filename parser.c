@@ -589,6 +589,7 @@ void findfollow(char* name){
 			}
 		}
 	}
+	followMatrix[hashNode->ruleNode][39]=0;
 	grammer[hashNode->ruleNode]->followcalculated=1;
 }
 
@@ -631,16 +632,19 @@ void printFirstSet(){
 	}
 }
 
+GrammarNode** parsetable;
+
 void initParseTable(){
-	parsetable = (Rule*)malloc(sizeof(Rule)*NO_OF_RULES);
+	parsetable = (GrammarNode**)malloc(sizeof(GrammarNode*)*NO_OF_RULES);
 	int i,j;
 	for (i=0;i<NO_OF_RULES;i++){
-		parsetable[i] = (Rule*)malloc(sizeof(Rule)*NO_OF_TERMINALS);
+		parsetable[i] = (GrammarNode)malloc(sizeof(grammarnode)*NO_OF_TERMINALS);
 		for(j=0;j<NO_OF_TERMINALS;j++){
 			parsetable[i][j]=NULL;
 		}
 	}
 }
+
 int* firstofRHS(GrammarNode rhs){
 	int i,j;
 	int* result = (int*)malloc(sizeof(int)*NO_OF_TERMINALS);
@@ -650,12 +654,18 @@ int* firstofRHS(GrammarNode rhs){
 		hashtable* hashNode;
 		hashNode = present(rhs->name);
 		if(hashNode==NULL){
+			int flag;
 			for(i=0;i<NO_OF_TERMINALS;i++){
-				if(strcmp(rhs->name,terminals[i])){
+				//printf("%d--%s\n",i,terminals[i]);
+				if(strcmp(rhs->name,terminals[i])==0){
+					//printf("%s macthed with %s at %d\n", rhs->name,terminals[i],i);
 					result[i]=1;
+					flag =1 ;
 					break;
 				}
 			}
+			if(flag==1) break;
+			else printf("Error !!!");
 		}
 		else{
 			for(i=0;i<NO_OF_TERMINALS;i++){
@@ -669,6 +679,10 @@ int* firstofRHS(GrammarNode rhs){
 		rhs = rhs->next;
 	}
 	if(rhs==NULL)  result[NO_OF_TERMINALS-1]=1;
+//	printf("Result\n");
+//	for(i=0;i<NO_OF_TERMINALS;i++){
+//		printf("%d ",result[i]);
+//	}
 	return result;
 }
 
@@ -676,30 +690,300 @@ void createParseTable(){
 	int i,j;
 	int* p;
 	for (i=0;i<NO_OF_RULES;i++){
-		p = firstofRHS(grammer[i]->head->next);
-		for(j=0;j<NO_OF_TERMINALS-1;j++){ //ignoring epsilon
-			if(p[j]==1){  // can be without ==
-				parsetable[i][j] = grammer[i];
+		//printf("%s sending", grammer[i]->head->next->name);
+		GrammarNode temp = grammer[i]->head->next;
+		//GrammarNode start = grammer[i]->head->next; //start of rule
+		while(temp!=NULL){
+			p = firstofRHS(temp);
+			for(j=0;j<NO_OF_TERMINALS-1;j++){ //ignoring epsilon
+				if(p[j]==1){  // can be without ==
+					if (parsetable[i][j]!=NULL) printf("Grammer not LL1") ;
+					parsetable[i][j] = temp;
+				}
 			}
-		}
-		if (p[NO_OF_TERMINALS-1]==1) {// can be without ==
-			for(j=0 ; j<NO_OF_TERMINALS; j++) { //remove eps from followset
-                if(followMatrix[i][j])
-                    parsetable[i][j] = grammer[i];
-            }
-		}
+			if (p[NO_OF_TERMINALS-1]==1) {// can be without ==
+				for(j=0 ; j<NO_OF_TERMINALS; j++) { //remove eps from followset
+	                if(followMatrix[i][j]==1)
+						if (parsetable[i][j]!=NULL) printf("Grammer not LL1") ;
+	                    parsetable[i][j] = temp;
+	            }
+			}
+			while(temp!=NULL && temp->type!=2){
+				temp=temp->next;
+			}
+			if(temp==NULL) break;
+			else {
+				temp = temp->next;
+				//start = 
+			}
+		}		
 	}
 }
 
 void printParseTable(){
 	int i,j;
+	printf("\n parse table\n");
 	for (i=0;i<NO_OF_RULES;i++){
-		printf("parse of %d\n",i);
+		printf("\n%s-->",grammer[i]->head->name);
 		for(j=0;j<NO_OF_TERMINALS;j++){
-			printf("%d",parsetable[i][j]);
+			if(parsetable[i][j]!=NULL){
+				printf("%s ",terminals[j],parsetable[i][j]->name); //linked to %s
+			}
+//			else{
+//				printf("0 ");
+//			}
+			
 		}
 	}
 }
+
+// Utilities function
+Stack createStack(){
+	Stack st = (Stack)malloc(sizeof(Stack));
+	st->bottom = (GrammarNode)malloc(sizeof(grammarnode));
+	st->top = (GrammarNode)malloc(sizeof(grammarnode));
+	strcpy(st->bottom->name,"END_OF_FILE");
+	strcpy(st->top->name,"<mainFunction>");
+	st->top->next=NULL;
+	st->top->prev=st->bottom;
+	st->top->type=1; //coz NT
+	//st->size=;
+	st->bottom->next=st->top;
+	st->bottom->prev=NULL;
+	st->bottom->type=0; //coz term
+	return st;
+}
+
+GrammarNode top(Stack* st){
+	return (*st)->top;
+}
+
+void reverseNode(GrammarNode* head_ref)
+{
+     GrammarNode temp = NULL;  
+     GrammarNode current = *head_ref;
+     while (current !=  NULL)
+     {
+       temp = current->prev;
+       current->prev = current->next;
+       current->next = temp;              
+       current = current->prev;
+     }      
+     if(temp != NULL )
+        *head_ref = temp->prev;
+}
+
+void push(Stack* st,GrammarNode gn){ // A-> BCD assuming gn is separate from the real grammar node
+	GrammarNode temp = gn;
+	GrammerNode temp2;
+	reverseNode(&gn); // DCB
+	(*st)->top->next = gn; // S->DCB
+	while((*st)->top->next!=NULL){
+		(*st)->top = (*st)->top->next;
+	}
+}
+
+void pop(Stack* st){
+	GrammarNode temp = (*st)->top;
+	(*st)->top = (*st)->top->prev;
+	(*st)->top->next = NULL;
+	free(temp);
+}
+
+parsetree createParseTree(){
+	parsetree root = (parsetree)malloc(sizeof(treenode));
+	root->ruleNode = (GrammarNode)malloc(sizeof(grammarnode));
+	strcpy(root->ruleNode->name,"<mainFunction>");
+	root->ruleNode->next = NULL;
+	root->ruleNode->prev = NULL;
+	root->ruleNode->type = 1; //coz NT
+	root->ruleNo = 0;
+	root->leafnode = 0;
+	root->noc = 0;
+	root->parent = NULL;
+	root->child = (struct treenode**)malloc((tree->noc+1)*sizeof(struct treenode*));
+	root->next = NULL;
+	return root;
+}
+
+parsetree next(parsetree tree){
+	if(tree->next!=NULL){
+		return tree->next;
+	}
+	else{
+		if(tree->parent==NULL) return tree; //main function
+		else{
+			while(tree->parent!=NULL){
+				tree = tree->parent;
+				if(tree->next!=NULL) return tree->next;
+			}
+			return tree;
+		}
+	}
+}
+
+parsetree tokenizeTree(parsetree tree,tokenInfo tk){
+	strcpy(tree->tk.name,tk.name);
+	tree->tk.type = tk.typel
+	tree->tk.lineno = tk.lineno;
+	strcpy(tree->tk.lexeme,tk.lexeme);
+	tree = next(tree);
+	return tree;
+}
+
+parsetree makeTreeFromGrammerNode(GrammerNode node){
+	parsetree new = (parsetree)malloc(sizeof(treenode));
+	new->ruleNode = (GrammerNode)malloc(sizeof(grammarnode)
+	strcpy(new->ruleNode->name, node->name);
+	new->ruleNode->next = NULL; //not needed
+	new->ruleNode->prev = NULL; //not needed
+	new->ruleNode->type = node->type; //coz NT
+	new->next = NULL;
+	new->noc = 0;
+	new->ruleNo = 0;
+	if (node->type==0 || node->type==3) new->leafnode = 1;
+	else new->leafnode = 0;
+	new->child = (struct treenode**)malloc((new->noc+1)*sizeof(struct treenode*));
+	return new;
+}
+
+parsetree addChildren(parsetree tree, GrammarNode ruleNode){ // A->BCD ruleNode begins from B
+	//tree->child = (struct treenode**)malloc((tree->noc+1)*(struct treenode*));
+	GrammarNode temp = ruleNode;
+	while(temp!=NULL){
+		tree->child = (struct treenode**)realloc(tree->child,(tree->noc+1)*(struct treenode*));
+		tree->child[tree->noc] = makeTreeFromGrammerNode(temp);
+		tree->child[tree->noc]->no = tree->noc;
+		tree->child[tree->noc]->parent = tree;
+		temp = temp->next;
+		tree->noc++;
+	}
+	int i;
+	for (i=0;i<tree->noc-1;i++){
+		tree->child[i]->next = tree->child[i+1]->next
+	}
+	return tree->child[0];
+}
+
+parseTree parseInputSourceCode(char *testcaseFile, GrammarNode** parsetable){
+	File *fp = fopen(testcaseFile,"r+");
+	if (fp==NULL) {
+		printf("Error opening file");
+		return NULL;
+	}
+	Stack st = createStack();
+	parsetree ParseTree = createParseTree();
+	pop(&st);
+	push(&st,grammer[0]->head->next); //main rule
+	ParseTree = addChildren(ParseTree,grammer[i]->head->next);
+	tokenInfo tk = getNextToken(fp);
+	tokenInfo tk2;
+	GrammarNode gn;
+	int error = 0;
+	int i;
+	while(tk.type!=EOF1 && !feof(fp){
+		gn = top(&st);
+		if(gn->type==1){ // 
+			hashtable* hashNode;
+			hashNode = present(gn->name);
+			for(i=0;i<NO_OF_TERMINALS;i++){
+				if(strcmp(tk.name,terminals[i])==0) break;
+			}
+			if(i==NO_OF_TERMINALS){
+				printf("\n%d: Syntax Error: Unrecognised term.",tk.lineno,tk.name);
+				error++;
+				tk = getNextToken(fp);
+			}
+			else{
+				GrammarNode newnode= parsetable[hashNode->ruleNode][i];
+				if(newnode==NULL){
+					printf("\n%d: Syntax Error: Expected '%s' , got '%s'.",tk.lineno, gn->name,tk.name);
+					error++;
+					tk = getNextToken(fp);
+				}
+				else{
+					pop(&st);
+					push(&st,newnode);
+					ParseTree = addChildren(ParseTree,newnode);
+				}
+				
+			}
+			
+		}
+		else{ // check whether to chekc for EPSILON and |
+			if(strcmp(gn->name,"EPSILON")==0){
+				strcpy(tk2.name,"EPSILON");
+				strcpy(tk2.lexeme," ");
+				tk2.lineno = 0;
+				tk2.type = EPSILON;
+				pop(&st);
+				ParseTree = tokenizeTree(ParseTree,tk2);
+			}
+			else if(strcmp(gn->name,tk.name)==0){
+				pop(&st);
+				ParseTree = tokenizeTree(ParseTree,tk);
+				tk = getNextToken(fp);
+			}
+			else{
+				printf("\n%d: Syntax Error: Expected '%s' , got '%s'.",tk.lineno, gn->name,tk.name);
+				error++;
+				tk = getNextToken(fp);
+			}
+		}
+	}
+	if(tk.type==EOF && error==0){
+		printf("Input source code is syntactically correct\n");
+	}
+	else{
+		printf("Input source code is not syntactically correct. Total %d errors found\n",error);
+	}
+	return ParseTree;
+}
+
+void printParseTree(parsetree PT, char* outfile)
+{
+	FILE *fp;
+	fp = fopen (outfile,"w");
+	printf("lexemeCurrentNode  lineno token valueIfNumber parentNodeSymbol isLeafNode NodeSymbol\n");
+	do	{
+		if(PT==NULL )return;
+		else if(PT->child[0]!=NULL){fileprint(PT,fp);PT=PT->child[0];}
+		else {fileprint(PT,fp);PT=next(PT);}
+		}
+	while(PT->parent!=NULL);
+	return;
+}
+
+void fileprint(parsetree tr,FILE *f)
+{
+    if((tr->ruleNode)->type==0)
+        {
+            printf("%15s",tr->tk.lexeme);
+            printf("%7d",tr->tk.line_no);
+            printf("%15s",tr->tk.name);
+        }
+	else
+        {
+            printf("      ---------");
+            printf("%7d",0);
+            printf("%s"," --------------");
+        }
+    if((tr->ruleNode)->type==0)
+    {
+        if(strcmp(tr->tk.name,"NUM")==0)printf("%9d",atoi(tr->tk.lexeme));
+        else if(strcmp(tr->tk.name,"RNUM")==0)printf("%9f",atof(tr->tk.lexeme));
+        else printf("%9s","----");
+    }
+	else printf("%9s","----");
+    if(tr->parent!=NULL)printf("%25s",tr->parent->ruleNode->name);
+    else printf("%25s","ROOT");
+    if((tr->n)->nt==0)printf("%7s","YES");
+    else printf("%7s","NO");
+    if(tr->n->nt==1){printf("%25s",(tr->n)->name);}
+    else printf("%25s","---------");
+    printf("\n");
+}
+
 
 int main(){
 	 printf("Started");
@@ -713,6 +997,8 @@ int main(){
 	 findFirstSet();
 	 printf("\nIntialised2\n");
 	 findFollowSet();
+	 parsetree PT = parseInputSourceCode("testcase1.txt",parsetable);
+	 printParseTree(PT,"output1.txt");
 	 //printFirstSet();
 	 
 }

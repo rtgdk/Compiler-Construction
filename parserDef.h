@@ -33,12 +33,33 @@ Rule* grammer[NO_OF_RULES];
 
 typedef struct hashtable{
 	int type;
-	int ruleNode;  // NULL for term
+	int ruleNode;  // 0 for terminal
 	char name[50];
 	struct hashtable* next;
 } hashtable;
 
-Rule* parsetable[NO_OF_RULES][NO_OF_TERMINALS];
+GrammarNode** parsetable;
 
 hashtable* HashTable[hashtablesize];
+
+typedef struct stack{
+	GrammarNode bottom;
+	GrammarNode top;
+	//int size;
+} stack;
+
+typedef stack* Stack;
+typedef struct treenode{
+	tokenInfo tk;
+	struct treenode* parent;
+	struct treenode** child;
+	int noc; //no of child
+	int leafnode;  //terminal
+	struct treenode* next;
+	int ruleNo;
+	GrammarNode ruleNode;
+	int no;
+} treenode;
+
+typedef treenode* parsetree;
 #endif PARSERDEFINATIONHEADER
