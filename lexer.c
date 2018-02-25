@@ -325,185 +325,185 @@ tokenInfo getNextToken(FILE *fp){
 					}
 					break;
 				case 8: // 1 (number)
-				switch(ch){
-					case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 8; break;
-					case '.': tk.lexeme[lexemecount++] = ch;  state = 32; break;
-					default : currentpos--; tk.type = NUM; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"NUM"); return tk;
-				}
-				break;
-			case 32: //RNUM a.
-				switch(ch){
-					case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 33; break;
-					case 'a':
-					case 'o':
-					case 'n': currentpos--; currentpos--; tk.type = NUM; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"NUM"); return tk;
-					default : state = 54; break;
-				}
-				break;
-			case 33: //RNUM a.b
-				switch(ch){
-					case '0' ... '9': tk.type = RNUM; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
-					default : //check
-								currentpos--;tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
-				}
-				break;
-			case 54: //number.<char>
-				tk.type=ERROR; printf("\n%d: Lexical Error: Invalid Real Number '%s'",tk.lineno,tk.lexeme); return tk; // or maybe space not given
-			case 9: // _
-				switch(ch){
-					case 'm': tk.lexeme[lexemecount++] = ch; state = 34; break;
-					case 'a' ... 'l':
-					case 'n' ... 'z': 
-					case 'A' ... 'Z':tk.lexeme[lexemecount++] = ch; state = 38; break;
-					case '0' ... '9': state = 55; break;
-					default : state = 56; break;
-				}
-				break;
-			case 55:
-				tk.type=ERROR; printf("\n%d: Lexical Error: Invalid Function Name '%s'. _ cannot be followed by a number",tk.lineno,tk.lexeme); return tk;
-			case 56:
-				tk.type=ERROR; printf("\n%d: Lexical Error: Function Name '%s' contain invalid character",tk.lineno,tk.lexeme); return tk;
-			case 34: // _m
-				switch(ch){
-					case 'a': tk.lexeme[lexemecount++] = ch; state = 35; break;
-					case 'b' ... 'z':
-					case 'A' ... 'Z':
-					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
-					case '[':
-					case '(': 
-					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
-					default: state = 56; break;
-				}
-				break;
-			case 35: // _ma
-				switch(ch){
-					case 'i': tk.lexeme[lexemecount++] = ch; state = 36; break;
-					case 'a' ... 'h':
-					case 'j' ... 'z':
-					case 'A' ... 'Z':
-					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
-					case '[':
-					case '(': 
-					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
-					default: state = 56; break;
-				}
-				break;
-			case 36: //_mai
-				switch(ch){
-					case 'n': tk.lexeme[lexemecount++] = ch; state = 37; break;
-					case 'a' ... 'm':
-					case 'o' ... 'z': 
-					case 'A' ... 'Z':
-					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
-					case '[':
-					case '(': 
-					case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
-					default: state = 56; break;
-				}
-				break;
-			case 37: //_main
-				switch(ch){
-					case 'a' ... 'z':
-					case 'A' ... 'Z':
-					case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 38; break;
-					case '[':
-					case '(': 
-					case ' ': currentpos--;tk.type = MAIN; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"MAIN"); return tk;
-					default: state = 56; break;
-				}
-				break;
-			case 38: //_funntion
-				switch(ch){
-					case 'a' ... 'z':
-					case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
-					case '[':
-					case '(': 
-					case ' ': currentpos--;
-							if (lexemecount<20){
-								tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
-							 }
-							 else{
-								state=57;break;
-							 }
-					default: state = 56; break;
-				}
-				break;
-			case 57:
-				tk.type=ERROR; printf("\n%d: Lexical Error: Function Name '%s' exceeds the maximum length limit of 20",tk.lineno,tk.lexeme); return tk;
-			case 10: // "
-				switch(ch){
-					case 'a' ... 'z':
-					case ' ': tk.lexeme[lexemecount++] = ch; state=39; break;
-					case '"': state = 51; break;  //"" length=2, no string
-					default : state = 52; break;
-				}
-				break;
-			case 39: //"a
-				switch(ch){
-					case 'a' ... 'z': 
-					case ' ': tk.lexeme[lexemecount++] = ch;  state=39; break;
-					case '"':{ 
-						if (lexemecount<=21){
-							tk.type = STR; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"STR"); return tk;
-						}
-						else{
-							state = 53; break;
-						}
+					switch(ch){
+						case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 8; break;
+						case '.': tk.lexeme[lexemecount++] = ch;  state = 32; break;
+						default : currentpos--; tk.type = NUM; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"NUM"); return tk;
 					}
-					default: state = 52; break;
-				}
-				break;
-			case 51:
-				tk.type=ERROR; printf("\n%d: Lexical Error: Empty String",tk.lineno); return tk;
-			case 52:
-				tk.type=ERROR; printf("\n%d: Lexical Error: String contains invalid character",tk.lineno); return tk;
-			case 53:
-				tk.type=ERROR; printf("\n%d: Lexical Error: String '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return tk; //maybe add \0 in lexeme
-			
-			case 11: 
-				switch(ch){
-					case 'a' ... 'z': 
-					case 'A' ... 'Z': tk.lexeme[lexemecount++] = ch;  state=11; break;
-					case '0' ... '9': tk.lexeme[lexemecount++] = ch;
-						if (lexemecount<=20){
-							tk.lexeme[lexemecount] ='\0' ;
-							char name[50];
-							int type = isKeyword(tk,name);
-							if(type!=-1){
-								tk.type = (character)type; strcpy(tk.name,name);
+					break;
+				case 32: //RNUM a.
+					switch(ch){
+						case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 33; break;
+						case 'a':
+						case 'o':
+						case 'n': currentpos--; currentpos--; tk.type = NUM; tk.lexeme[lexemecount-1] ='\0' ; strcpy(tk.name,"NUM"); return tk;
+						default : state = 54; break;
+					}
+					break;
+				case 33: //RNUM a.b
+					switch(ch){
+						case '0' ... '9': tk.type = RNUM; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
+						default : //check
+									currentpos--;tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
+					}
+					break;
+				case 54: //number.<char>
+					currentpos--; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; printf("\n%d: Lexical Error: Invalid Real Number '%s'",tk.lineno,tk.lexeme); return ; // or maybe space not given
+				case 9: // _
+					switch(ch){
+						case 'm': tk.lexeme[lexemecount++] = ch; state = 34; break;
+						case 'a' ... 'l':
+						case 'n' ... 'z': 
+						case 'A' ... 'Z':tk.lexeme[lexemecount++] = ch; state = 38; break;
+						case '0' ... '9': currentpos--; state = 55; break;
+						default : currentpos--; state = 56; break;
+					}
+					break;
+				case 55:
+					currentpos--; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; printf("\n%d: Lexical Error: Invalid Function Name '%s'. _ cannot be followed by a number",tk.lineno,tk.lexeme); return;
+				case 56:
+					currentpos--; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; printf("\n%d: Lexical Error: Function Name '%s' contain invalid character. Only alphabets and 1 number(at the end,optional) is allowed.",tk.lineno,tk.lexeme); return;
+				case 34: // _m
+					switch(ch){
+						case 'a': tk.lexeme[lexemecount++] = ch; state = 35; break;
+						case 'b' ... 'z':
+						case 'A' ... 'Z':
+						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
+						case '[':
+						case '(': 
+						case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
+						default: currentpos--; state = 56; break;
+					}
+					break;
+				case 35: // _ma
+					switch(ch){
+						case 'i': tk.lexeme[lexemecount++] = ch; state = 36; break;
+						case 'a' ... 'h':
+						case 'j' ... 'z':
+						case 'A' ... 'Z':
+						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
+						case '[':
+						case '(': 
+						case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
+						default: currentpos--; state = 56; break;
+					}
+					break;
+				case 36: //_mai
+					switch(ch){
+						case 'n': tk.lexeme[lexemecount++] = ch; state = 37; break;
+						case 'a' ... 'm':
+						case 'o' ... 'z': 
+						case 'A' ... 'Z':
+						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
+						case '[':
+						case '(': 
+						case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
+						default: currentpos--; state = 56; break;
+					}
+					break;
+				case 37: //_main
+					switch(ch){
+						case 'a' ... 'z':
+						case 'A' ... 'Z':
+						case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 38; break;
+						case '[':
+						case '(': 
+						case ' ': currentpos--;tk.type = MAIN; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"MAIN"); return tk;
+						default: currentpos--; state = 56; break;
+					}
+					break;
+				case 38: //_funntion
+					switch(ch){
+						case 'a' ... 'z':
+						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
+						case '[':
+						case '(': 
+						case ' ': currentpos--;
+								if (lexemecount<=20){
+									tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
+								 }
+								 else{
+									state=57;break;
+								 }
+						default: currentpos--; state = 56; break;
+					}
+					break;
+				case 57:
+					currentpos--; printf("\n%d: Lexical Error: Function Name '%s' exceeds the maximum length limit of 20",tk.lineno,tk.lexeme); return ;
+				case 10: // "
+					switch(ch){
+						case 'a' ... 'z':
+						case ' ': tk.lexeme[lexemecount++] = ch; state=39; break;
+						case '"': state = 51; break;  //"" length=2, no string
+						default : currentpos--; state = 52; break;
+					}
+					break;
+				case 39: //"a
+					switch(ch){
+						case 'a' ... 'z': 
+						case ' ': tk.lexeme[lexemecount++] = ch;  state=39; break;
+						case '"':{ 
+							if (lexemecount<=21){
+								tk.type = STR; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"STR"); return tk;
 							}
 							else{
-								tk.type = ID;  strcpy(tk.name,"ID");
+								state = 53; break;
 							}
-							return tk;
 						}
-						else{
-							state=60; break;
-						}
-						break;
-					default : {
-						currentpos--;
-						if (lexemecount<=20){
-							tk.lexeme[lexemecount] ='\0' ;
-							char name[50];
-							int type = isKeyword(tk,name);
-							if(type!=-1){
-								tk.type = (character)type; strcpy(tk.name,name);
+						default: state = 52; break;
+					}
+					break;
+				case 51: //currentpos--;
+					 printf("\n%d: Lexical Error: Empty String",tk.lineno); return ;
+				case 52:
+					currentpos--; printf("\n%d: Lexical Error: String '%s' contains invalid character",tk.lineno); return ;
+				case 53:
+					printf("\n%d: Lexical Error: String '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return ; //maybe add \0 in lexeme
+				
+				case 11:  //ID
+					switch(ch){
+						case 'a' ... 'z': 
+						case 'A' ... 'Z': tk.lexeme[lexemecount++] = ch;  state=11; break;
+						case '0' ... '9': tk.lexeme[lexemecount++] = ch;
+							if (lexemecount<=20){
+								tk.lexeme[lexemecount] ='\0' ;
+								char name[50];
+								int type = isKeyword(tk,name);
+								if(type!=-1){
+									tk.type = (character)type; strcpy(tk.name,name);
+								}
+								else{
+									tk.type = ID;  strcpy(tk.name,"ID");
+								}
+								return tk;
 							}
 							else{
-								tk.type = ID;  strcpy(tk.name,"ID");
+								state=60; break;
 							}
-							return tk;
+							break;
+						default : {
+							currentpos--;
+							if (lexemecount<=20){
+								tk.lexeme[lexemecount] ='\0' ;
+								char name[50];
+								int type = isKeyword(tk,name);
+								if(type!=-1){
+									tk.type = (character)type; strcpy(tk.name,name);
+								}
+								else{
+									tk.type = ID;  strcpy(tk.name,"ID");
+								}
+								return tk;
+							}
+							else{
+								state=60; break;
+							}
+							break;
 						}
-						else{
-							state=60; break;
-						}
-						break;
 					}
-				}
-				break;
-			case 60:
-				tk.type=ERROR; printf("\n%d: Lexical Error: ID '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return tk;
+					break;
+				case 60:
+					currentpos--; printf("\n%d: Lexical Error: ID '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return;
 		}
 	}
 }
