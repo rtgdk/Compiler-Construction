@@ -344,7 +344,7 @@ tokenInfo getNextToken(FILE *fp){
 					switch(ch){
 						case '0' ... '9': tk.type = RNUM; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
 						default : //check
-									currentpos--;tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
+									currentpos--; state = 54; break; //tk.type = RNUM; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"RNUM"); return tk;
 					}
 					break;
 				case 54: //number.<char>
@@ -362,7 +362,7 @@ tokenInfo getNextToken(FILE *fp){
 				case 55:
 					currentpos--; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; printf("\n%d: Lexical Error: Invalid Function Name '%s'. _ cannot be followed by a number",tk.lineno,tk.lexeme); return;
 				case 56:
-					currentpos--; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; printf("\n%d: Lexical Error: Function Name '%s' contain invalid character. Only alphabets and 1 number(at the end,optional) is allowed.",tk.lineno,tk.lexeme); return;
+					currentpos--; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; printf("\n%d: Lexical Error: Function '%s' contain invalid character. Only alphabets and 1 number(at the end,optional) is allowed.",tk.lineno,tk.lexeme); return;
 				case 34: // _m
 					switch(ch){
 						case 'a': tk.lexeme[lexemecount++] = ch; state = 35; break;
@@ -371,8 +371,10 @@ tokenInfo getNextToken(FILE *fp){
 						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 						case '[':
 						case '(': 
-						case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
-						default: currentpos--; state = 56; break;
+						case ' ': 
+						case '\t':
+						case '\n': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
+						default: currentpos--; state = 56; break; //tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
 					}
 					break;
 				case 35: // _ma
@@ -384,7 +386,9 @@ tokenInfo getNextToken(FILE *fp){
 						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 						case '[':
 						case '(': 
-						case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
+						case ' ': 
+						case '\t':
+						case '\n': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
 						default: currentpos--; state = 56; break;
 					}
 					break;
@@ -397,7 +401,9 @@ tokenInfo getNextToken(FILE *fp){
 						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 						case '[':
 						case '(': 
-						case ' ': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
+						case ' ': 
+						case '\t':
+						case '\n': currentpos--;tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
 						default: currentpos--; state = 56; break;
 					}
 					break;
@@ -408,7 +414,9 @@ tokenInfo getNextToken(FILE *fp){
 						case '0' ... '9': tk.lexeme[lexemecount++] = ch;  state = 38; break;
 						case '[':
 						case '(': 
-						case ' ': currentpos--;tk.type = MAIN; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"MAIN"); return tk;
+						case ' ': 
+						case '\t':
+						case '\n': currentpos--;tk.type = MAIN; tk.lexeme[lexemecount] ='\0' ; strcpy(tk.name,"MAIN"); return tk;
 						default: currentpos--; state = 56; break;
 					}
 					break;
@@ -418,7 +426,9 @@ tokenInfo getNextToken(FILE *fp){
 						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 						case '[':
 						case '(': 
-						case ' ': currentpos--;
+						case ' ': 
+						case '\t':
+						case '\n': currentpos--;
 								if (lexemecount<=20){
 									tk.type = FUNID; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"FUNID"); return tk;
 								 }
@@ -443,8 +453,9 @@ tokenInfo getNextToken(FILE *fp){
 						case 'a' ... 'z': 
 						case ' ': tk.lexeme[lexemecount++] = ch;  state=39; break;
 						case '"':{ 
+							tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ;
 							if (lexemecount<=21){
-								tk.type = STR; tk.lexeme[lexemecount++] = ch; tk.lexeme[lexemecount++] ='\0' ; strcpy(tk.name,"STR"); return tk;
+								tk.type = STR; strcpy(tk.name,"STR"); return tk;
 							}
 							else{
 								state = 53; break;
@@ -456,7 +467,7 @@ tokenInfo getNextToken(FILE *fp){
 				case 51: //currentpos--;
 					 printf("\n%d: Lexical Error: Empty String",tk.lineno); return ;
 				case 52:
-					currentpos--; printf("\n%d: Lexical Error: String '%s' contains invalid character",tk.lineno); return ;
+					 printf("\n%d: Lexical Error: String contains invalid character",tk.lineno); return ;
 				case 53:
 					printf("\n%d: Lexical Error: String '%s' exceeds the maximum length of 20",tk.lineno,tk.lexeme); return ; //maybe add \0 in lexeme
 				
