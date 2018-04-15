@@ -38,7 +38,7 @@ typedef struct variablenode{
 	struct variablenode* next; 
 } variablenode;
 
-typedef stuct variablenode* variablenodeptr;
+typedef struct variablenode* variablenodeptr;
 
 typedef struct function{
 	char name[50];

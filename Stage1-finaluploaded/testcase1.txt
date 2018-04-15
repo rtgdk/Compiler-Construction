@@ -1,5 +1,9 @@
 _main[     ]
-	
-	str1 = str1 + str2;
+	string str1, str2;
+    str1 = str1 + str2;
+    function [int a,int b] = _con[int c, int d]
+        c = a;
+        d = b;
+    end;
 end
 

@@ -6,12 +6,11 @@ Rohit Lodha
 #define SYMBOLTABLEHEADER
 
 #include "symbolTableDef.h"
-#include "symboltableDef.h"
 #include "parserDef.h"
 extern int hash4(char* str);
 extern void initSymbolTable();
 extern int get_int(char *arr);
-extern void addVariable(SymbolTablePtr st,variable v);
+extern void addVariable(variable v,SymbolTablePtr st);
 extern void addFunction(function f, int start, int end);
 extern int getType(parsetree pt) ;
 extern int getWidth(int type);

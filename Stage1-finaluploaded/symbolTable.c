@@ -17,8 +17,9 @@ Rohit Lodha
 #define GRN   "\x1B[32m"
 #define RESET "\x1B[0m"
 
-int sno, soffset;
+int soffset;
 
+char* types[] = {"INTEGER","REAL","STRING","MATRIX"};
 /*
 For hashing Allowed Terminals to bucket no in HashTable
 */
@@ -37,8 +38,13 @@ void initSymbolTable(){
 	globalTable->noc = 0;
 	globalTable->parent = NULL;
 	globalTable->child = NULL;
-	globalTable->count = 0;
-	globalTable->VariableTable = ;
+	// function f;
+	// strcmp(f.name,"ROOT");
+	strcpy(globalTable->f.name,"ROOT");
+	//globalTable->count = 0;
+	int i;
+	for(i = 0 ; i < VariableTableSize ; i++)
+		globalTable->VariableTable[i] = NULL;
 	currentTable = globalTable;
 	currentScope = 0;
 }
@@ -53,19 +59,19 @@ int get_int(char *arr) /*str to int*/
   return num;
 }
 
-void addVariable(SymbolTablePtr st,variable v){
+void addVariable(variable v,SymbolTablePtr st){
 	int pos = hash4(v.name);
 
 	if(st->VariableTable[pos] == NULL)
 	{
-		variablenodeptr vnode = (variablenodeptr)malloc(sizeof(varnode));
+		variablenodeptr vnode = (variablenodeptr)malloc(sizeof(variablenode));
 		vnode->v = v;
 		vnode->next = NULL;
 		st->VariableTable[pos] = vnode;
 	}
 	else
 	{
-		variablenodeptr vnode = (variablenodeptr)malloc(sizeof(varnode));
+		variablenodeptr vnode = (variablenodeptr)malloc(sizeof(variablenode));
 		vnode->v = v;
 		vnode->next = NULL;
 		variablenodeptr temp = st->VariableTable[pos];
@@ -74,7 +80,7 @@ void addVariable(SymbolTablePtr st,variable v){
 		{
 			if(strcmp(temp->v.name , v.name) == 0 && temp->v.offset == v.offset)
 			{
-				err = true;
+				//err = true;
 				printf( "ERROR: Variable '%s' already declared at line %d and cannot be redeclared at line %d\n", v.name, temp->v.linedec, v.linedec );
 				return;
 			}
@@ -82,7 +88,7 @@ void addVariable(SymbolTablePtr st,variable v){
 		}
 		if((strcmp(temp->v.name , v.name) == 0) && (temp->v.offset == v.offset))
 		{
-				err = true;
+				//err = true;
 				printf( "ERROR: Variable '%s' already declared at line %d and cannot be redeclared at line %d\n", v.name, temp->v.linedec, v.linedec );
 				return;
 		}
@@ -124,7 +130,7 @@ void addFunction(function f, int start, int end) /* add f to MAIN, s start e end
 				}	
 				else
 				{
-					err = true;
+					//err = true;
 					printf( "ERROR : Redefinition of function %s\n" , f.name );
 				}	
 				
@@ -210,7 +216,7 @@ void addFunctionID(parsetree node)
 	f.defined = false;
 	f.inputList = NULL;
 	f.outputList = NULL;
-	f.occ = node->tk.lineno;
+	f.linedec = node->tk.lineno;
 	SymbolTablePtr t = (SymbolTablePtr)malloc(sizeof(SymbolTableNode));
 	t->type = 2;
 	t->f = f;
@@ -229,7 +235,7 @@ void addFunctionID(parsetree node)
 		{
 			if(strcmp(globalTable->child[i]->f.name , f.name) == 0)
 			{
-				err = true;
+				//err = true;
 				printf( "ERROR : Redeclaration of function %s\n" , f.name );
 				return;
 			}
@@ -246,18 +252,18 @@ void addInputList(parsetree node, function *f)
 	if(node->ruleNode->type==0 && (node->tk.type == ID))
 	{
 		int vtype;
-		if(strcmp(node->parent->name,"<parameter_list>")==0)
+		if(strcmp(node->parent->ruleNode->name,"<parameter_list>")==0)
 			vtype = getType(node->parent->child[0]);
 		else
 			vtype = getType(node->parent->child[1]);
 
-		variablenodeptr vptr = (variablenodeptr)malloc(sizeof(varnode));
+		variablenodeptr vptr = (variablenodeptr)malloc(sizeof(variablenode));
 		// printf("%s\n" , node->tk.lexeme);
 		strcpy(vptr->v.name,node->tk.lexeme);
 		vptr->v.linedec = node->tk.lineno;
 		vptr->v.assigned = false;
 		vptr->v.type = vtype;
-		vptr->v.scope = currentScope; 
+		vptr->v.scopeDepth = currentScope; 
 		vptr->next = NULL;
 		vptr->v.offset = 0;
 		f->noOfInput++;
@@ -284,20 +290,19 @@ void addOutputList(parsetree node,function *f)
 	if(node->ruleNode->type==0 && (node->tk.type == ID))
 	{
 		int vtype;
-		if(strcmp(node->parent->name,"<parameter_list>")==0)
+		if(strcmp(node->parent->ruleNode->name,"<parameter_list>")==0)
 			vtype = getType(node->parent->child[0]);
 		else
 			vtype = getType(node->parent->child[1]);
 
-		variablenodeptr vptr = (variablenodeptr)malloc(sizeof(varnode));
+		variablenodeptr vptr = (variablenodeptr)malloc(sizeof(variablenode));
 		strcpy(vptr->v.name,node->tk.lexeme);
 		vptr->v.linedec = node->tk.lineno;
-		vptr->v.scope = 0;
 		vptr->v.assigned = false;
 		vptr->v.type = vtype; 
 		vptr->next = NULL;
 		vptr->v.offset = 0;
-		vptr->v.scope = currentScope; 
+		vptr->v.scopeDepth = currentScope; 
 		f->noOfOutput++;
 		if(f->outputList == NULL)
 			f->outputList = vptr;
@@ -319,6 +324,7 @@ void addOutputList(parsetree node,function *f)
 
 void makeST(parsetree root)
 {
+	//printf("Current Node %s--Type%d\n",root->ruleNode->name,root->ruleNode->type);
 
 	if(root->ruleNode->type==1 && strcmp(root->ruleNode->name,"<var_list>")==0)
 	{
@@ -328,7 +334,7 @@ void makeST(parsetree root)
 			addVariableID(root, vtype , currentTable);
 		}
 	}
-	else if(root->ruleNode->type==1 && strcmp(root->ruleNode->name,"<parameter_list>")
+	else if(root->ruleNode->type==1 && strcmp(root->ruleNode->name,"<parameter_list>")==0)
 	{
 		if(strcmp(root->next->next->tk.name,"ASSIGNOP")==0)
 		{
@@ -344,7 +350,7 @@ void makeST(parsetree root)
 			addOutputList(root->parent->child[2],&f);
 			int start = root->parent->child[0]->tk.lineno;
 			int end = root->parent->child[11]->tk.lineno;
-			addFunction(f , start , end,);
+			addFunction(f , start , end);
 
 		}
 	}
@@ -359,7 +365,7 @@ void makeST(parsetree root)
 		f.outputList = NULL;
 		f.linedec = root->tk.lineno;
 		int start = root->tk.lineno;
-		int end = root->parent->child[4].tk.lineno;
+		int end = root->parent->child[4]->tk.lineno;
 		addFunction(f,start,end);
 	}	
 	// else if(root->ruleNode->type==0 && root->tk.type == IF)
@@ -386,15 +392,17 @@ void makeST(parsetree root)
 	// 	currentScope++;	
 	// }
 
-	else if(root->is_terminal && (root->tk.type == END) && (root->parent->name.c != moduleDef))
+	else if(root->ruleNode->type==0 && root->tk.type == END )
 	{
 		currentTable = currentTable->parent;
 		currentScope--;
 	}
 		
 	int i;
-	for(i = 0; i < root->noc ; i++)
+	for(i = 0; i < root->noc ; i++){
+		//printf("Going for child %d",root->ruleNode->name);
 		makeST(root->child[i]);	
+	}
 }
 
 
@@ -409,15 +417,15 @@ void print_symboltable(SymbolTablePtr br)
 			variablenodeptr temp = br->VariableTable[i]; 
 			while(temp != NULL)
 			{
-				printf("%5d   %8s " , sno, temp->v.name); 
+				printf("%8s " , temp->v.name); 
 				char arname[50];
 				strcpy(arname , temp->v.name);
-				printf("%d" , temp->v.type);
+				//printf("%d" , temp->v.type);
 
 				SymbolTablePtr btemp = br;
 
-				while(btemp->type != 2)
-					btemp = btemp->parent;
+				// while(btemp->type != 2)
+				// 	btemp = btemp->parent;
 
 				int width = 1;
 
@@ -425,25 +433,34 @@ void print_symboltable(SymbolTablePtr br)
 					width = 2;
 				else if(temp->v.type == 2)
 					width = 4;
+				else if(temp->v.type == 3)
+					width = 20;
 
-				printf("%12s        %d to %d    %13d             %d            %d\n" , btemp->f.name, btemp->start, btemp->end, temp->v.scope+1, width, soffset);
+				printf("%12s      %8d" , btemp->f.name, temp->v.scopeDepth+1);
+				if(btemp->parent!=NULL){
+					printf("%13s",btemp->parent->f.name);
+				}
+				else{
+					printf("------------------");
+				}
+				printf("%13s        %d    %d\n",types[temp->v.type-1], width, soffset);
 				soffset += width;
 
 				temp = temp->next;
-				sno++;
+				//sno++;
 
 			}
 		}
 	}
-	for(i = 0 ; i < br->no_of_children ; i++)
-		print_symboltable(br->children[i]);	
+	for(i = 0 ; i < br->noc ; i++)
+		print_symboltable(br->child[i]);	
 
 }
 
 void print_symboltable_util()
 {
-	printf(ANSI_COLOR_MAGENTA "S.No.     lexeme                type     scope_module 	 scope_line    scope_nesting 	     width        offset\n" ANSI_COLOR_RESET);
-	sno = 1;
+	printf("Identifier       Scope 	 nesting_level  scope_Parent     type     width    offset\n" );
+	//sno = 1;
 	print_symboltable(globalTable);
-	printf(ANSI_COLOR_GREEN "Symbol table generated successfully\n" ANSI_COLOR_RESET);
+	printf( "Symbol table generated successfully\n" );
 }
