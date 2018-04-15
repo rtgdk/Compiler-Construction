@@ -75,15 +75,18 @@ int main(int argc, char *argv[])
 		    initialiseLexer();
 		    PT = parseInputSourceCode(argv[1],parsetable);
 		    ast = makeAST(PT);
-		    printAST2(ast);
+		    printf("\n Inorder Traversal of AST\n\n");
+		    printf("     lexCurNode lineno          token valIfNum          parentNodeSymbol isLeaf               NodeSymbol\n");
+	 		printf("--------------------------------------------------------------------------------------------------------\n");
+		    printASTree(ast);
 		}
 		else if(n==6){
 		    initialiseLexer();
 		    PT = parseInputSourceCode(argv[1],parsetable);
-		    printf("PT succesfull %s\n",PT->ruleNode->name);
+		    //printf("PT succesfull %s\n",PT->ruleNode->name);
 		    makeST(PT);
-            printf("ST succesfull\n");
-		    print_symboltable_util();
+            //printf("ST succesfull\n");
+		    printST();
 		}
 		else{
 			printf("%sQuiting\n",RED);

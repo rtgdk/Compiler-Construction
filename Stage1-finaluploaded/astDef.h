@@ -11,6 +11,7 @@ Rohit Lodha
 #include <string.h>
 #include <stdbool.h>
 
+#include "symbolTableDef.h"
 #include "parserDef.h"
 #define NO_OF_ALLOWED_TERMINALS 27
 #define hashtablesize2 102
@@ -27,7 +28,8 @@ typedef struct astnode{
 	struct astnode** child;
 	int noc; //no of child
 	struct astnode* next;
-	char name[40];
+	GrammarNode ruleNode;
+	SymbolTablePtr st;
 } astnode;
 
 typedef astnode* AStree;

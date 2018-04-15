@@ -1,8 +1,5 @@
 _main[]
 	string s;
-	int a;
-	s = "abcd"+[1,2,3; 4,5,6,7];
-	# above should be syntactically correct
-	a = @s;
-	print(a);
+	int a,b;
+	a = a + b*b + a/b;
 end

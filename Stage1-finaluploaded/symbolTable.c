@@ -497,7 +497,7 @@ void print_symboltable(SymbolTablePtr br)
 
 }
 
-void print_symboltable_util()
+void printST()
 {
 	printf("Identifier       Scope 	 nesting_level  scope_Parent     type     width    offset\n" );
 	//sno = 1;

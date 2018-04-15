@@ -11,7 +11,8 @@ Rohit Lodha
 #include <string.h>
 #include <stdbool.h>
 
-#include "astDef.h"
+#include "parserDef.h"
+//#include "astDef.h"
 #define VariableTableSize 100
 
 // typedef struct array{

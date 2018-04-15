@@ -20,6 +20,6 @@ extern void addInputList(parsetree node, function *f);
 extern void addOutputList(parsetree node,function *f);
 extern void makeST(parsetree root);
 extern void print_symboltable(SymbolTablePtr br);
-extern void print_symboltable_util();
+extern void printST();
 
 #endif
