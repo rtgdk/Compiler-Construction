@@ -98,20 +98,20 @@ void addVariable(variable v,SymbolTablePtr st){
 
 void addFunction(function f, int start, int end) /* add f to MAIN, s start e end, li is line of dec. */
 {
-	int i;
-	if(globalTable->noc > 0)
+	//printf("reached here nochild->%d\n",currentTable->noc);
+	
+	if(currentTable->noc > 0)
 	{
-		SymbolTablePtr temp = globalTable->child[0];
 		int i;
 
-		for(i = 0 ; i < globalTable->noc ; i++)
+		for(i = 0 ; i < currentTable->noc ; i++)
 		{
-			if(strcmp(globalTable->child[i]->f.name , f.name) == 0)
+			if(strcmp(currentTable->child[i]->f.name , f.name) == 0)
 			{
-				if(!globalTable->child[i]->f.defined)
+				if(!currentTable->child[i]->f.defined)
 				{
-					globalTable->child[i]->f = f;
-					currentTable = globalTable->child[i];
+					currentTable->child[i]->f = f;
+					currentTable = currentTable->child[i];
 					variablenodeptr inp = f.inputList;
 					while(inp != NULL)
 					{
@@ -124,8 +124,8 @@ void addFunction(function f, int start, int end) /* add f to MAIN, s start e end
 						addVariable(op->v,currentTable);
 						op = op->next;
 					}
-					globalTable->child[i]->start = start;
-					globalTable->child[i]->end = end;
+					currentTable->child[i]->start = start;
+					currentTable->child[i]->end = end;
 					return;
 				}	
 				else
@@ -141,12 +141,12 @@ void addFunction(function f, int start, int end) /* add f to MAIN, s start e end
 
 	SymbolTablePtr t = (SymbolTablePtr)malloc(sizeof(SymbolTableNode));
 	t->type = 2;
-	
+	int i;
 	t->f = f;
 	t->noc = 0;
 	for(i = 0 ; i < 100 ; i++)
 		t->VariableTable[i] = NULL;
-	t->parent = globalTable;
+	t->parent = currentTable;
 	t->child = NULL;
 	//t->counter = 0;
 
@@ -164,10 +164,12 @@ void addFunction(function f, int start, int end) /* add f to MAIN, s start e end
 	}
 	t->start = start;
 	t->end = end;
-	globalTable->child = (SymbolTablePtr*)realloc(globalTable->child,(globalTable->noc+1)*sizeof(SymbolTablePtr));
-	globalTable->child[globalTable->noc] = t;
-	currentTable = globalTable->child[globalTable->noc];
-	globalTable->noc++;
+	//printf("reached here\n");
+	currentTable->child = (SymbolTablePtr*)realloc(currentTable->child,(currentTable->noc+1)*sizeof(SymbolTablePtr));
+	currentTable->child[currentTable->noc] = t;
+	currentTable->noc++;
+	currentTable = currentTable->child[currentTable->noc-1];
+	
 }
 
 int getType(parsetree pt) // returns int with int,real,str and matrix, pt has noc =1
@@ -223,17 +225,17 @@ void addFunctionID(parsetree node)
 	for(i = 0 ; i < 100 ; i++)
 		t->VariableTable[i] = NULL;
 	t->noc = 0;
-	t->parent = globalTable;
+	t->parent = currentTable;
 	t->child = NULL;
 
-	if(globalTable->noc > 0)
+	if(currentTable->noc > 0)
 	{
-		SymbolTablePtr temp = globalTable->child[0];
+		SymbolTablePtr temp = currentTable->child[0];
 		int i;
 
-		for(i = 0 ; i < globalTable->noc ; i++)
+		for(i = 0 ; i < currentTable->noc ; i++)
 		{
-			if(strcmp(globalTable->child[i]->f.name , f.name) == 0)
+			if(strcmp(currentTable->child[i]->f.name , f.name) == 0)
 			{
 				//err = true;
 				printf( "ERROR : Redeclaration of function %s\n" , f.name );
@@ -241,10 +243,11 @@ void addFunctionID(parsetree node)
 			}
 		}
 	}
-	globalTable->child = (SymbolTablePtr*)realloc(globalTable->child,(globalTable->noc+1)*sizeof(SymbolTablePtr));
-	globalTable->child[globalTable->noc] = t;
+	currentTable->child = (SymbolTablePtr*)realloc(currentTable->child,(currentTable->noc+1)*sizeof(SymbolTablePtr));
+	currentTable->child[currentTable->noc] = t;
 	//t->counter = 0;
-	globalTable->noc++;
+	currentTable->noc++;
+
 }
 
 void addInputList(parsetree node, function *f)
@@ -326,6 +329,7 @@ void makeST(parsetree root)
 {
 	//printf("Current Node %s--Type%d\n",root->ruleNode->name,root->ruleNode->type);
 
+	//printf("PT->%s ST->%s\n",root->ruleNode->name,currentTable->f.name);
 	if(root->ruleNode->type==1 && strcmp(root->ruleNode->name,"<var_list>")==0)
 	{
 		if(strcmp(root->parent->ruleNode->name,"<declarationStmt>")==0)
@@ -346,12 +350,16 @@ void makeST(parsetree root)
 			f.inputList = NULL;
 			f.outputList = NULL;
 			f.linedec = root->parent->child[5]->tk.lineno; //can be done outside function
+			currentScope++;
 			addInputList(root->parent->child[7] , &f);
+			//printf("Input list added\n");
 			addOutputList(root->parent->child[2],&f);
+			//printf("Output list added\n");
 			int start = root->parent->child[0]->tk.lineno;
 			int end = root->parent->child[11]->tk.lineno;
 			addFunction(f , start , end);
-
+			//printf("Function added\n");
+			
 		}
 	}
 	else if(root->ruleNode->type==0 && root->tk.type==MAIN)
@@ -368,6 +376,38 @@ void makeST(parsetree root)
 		int end = root->parent->child[4]->tk.lineno;
 		addFunction(f,start,end);
 	}	
+	else if(root->ruleNode->type==0 && root->tk.type==IF){
+		function f;
+		f.noOfInput = 0;
+		f.noOfOutput = 0;
+		strcpy(f.name,"IF");
+		f.defined = true;
+		f.inputList = NULL;
+		f.outputList = NULL;
+		f.linedec = root->tk.lineno;
+		currentScope++;
+		int start = root->tk.lineno;
+		int end = root->parent->child[6]->child[0]->tk.lineno;
+		addFunction(f,start,end);
+	}
+	else if(root->ruleNode->type==0 && root->tk.type==ELSE){
+		currentTable = currentTable->parent;
+		function f;
+		f.noOfInput = 0;
+		f.noOfOutput = 0;
+		strcpy(f.name,"ELSE");
+		f.defined = true;
+		f.inputList = NULL;
+		f.outputList = NULL;
+		f.linedec = root->tk.lineno;
+		int start = root->tk.lineno;
+		int end = root->parent->child[3]->tk.lineno;
+		addFunction(f,start,end);
+	}
+	else if(root->ruleNode->type==0 && root->tk.type==ENDIF){
+		currentTable = currentTable->parent;
+		currentScope--;
+	}
 	// else if(root->ruleNode->type==0 && root->tk.type == IF)
 	// {
 	// 	SymbolTablePtr t = (SymbolTablePtr)malloc(sizeof(SymbolTableNode));
