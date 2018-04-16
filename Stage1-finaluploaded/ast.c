@@ -136,6 +136,8 @@ AStree tokenizeTree2(AStree tree,tokenInfo tk){
 	return tree;
 }
 
+
+
 /*
 create parse tree
 */
@@ -160,6 +162,7 @@ AStree createASTree(parsetree pt){
 	else{
 		root->ruleNode->type = 1; //coz NT
 	}
+	root->st = currentTable;
 	return root;
 }
 
@@ -223,9 +226,27 @@ AStree parseToAST(parsetree PT){
 					}
 				}
 			}
-			else if (present2(PT->child[i]->ruleNode->name)){
-				flag = 1;
-				ast = addChildren2(ast,PT->child[i]);
+			else {
+				if (PT->child[i]->tk.type==MAIN || PT->child[i]->tk.type==IF || PT->child[i]->tk.type==FUNCTION){
+					printf("Here\n");
+					currentTable->counter++;
+					currentTable = currentTable->child[currentTable->counter-1];
+				}
+				else if (PT->child[i]->tk.type==ELSE){
+					printf("Here2\n");
+					currentTable = currentTable->parent;
+					currentTable->counter++;
+					currentTable = currentTable->child[currentTable->counter-1];
+				}
+				else if (PT->child[i]->tk.type==ENDIF || PT->child[i]->tk.type==END){
+					printf("Here3\n");
+					currentTable = currentTable->parent;
+				}
+				if (present2(PT->child[i]->ruleNode->name)){
+					flag = 1;
+					ast = addChildren2(ast,PT->child[i]);
+				}
+				
 			}
 		}
 	}
@@ -333,6 +354,7 @@ AStree modifyAST(AStree ast){
 
 AStree makeAST(parsetree PT){
     //printf("Here %s\n",PT->ruleNode->name);
+    currentTable = globalTable;
     AStree ast = parseToAST(PT);
     //printf("Here %s\n",ast->ruleNode->name);
     ast = modifyAST(ast);
@@ -474,5 +496,6 @@ void printToFile2(AStree tr,FILE *fp)
     	printf("%25s","---------");
 	}
     //printf("\n");
+    printf(" 10%s" ,tr->st->f.name);
     printf("\n");
 }

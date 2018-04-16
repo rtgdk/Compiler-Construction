@@ -22,7 +22,7 @@ Rohit Lodha
 
 typedef struct variable{
 	char name[40];
-	int type;  //1 int, 2 real, 3 string, 4 matrix
+	int type;  //1 int, 2 real, 3 string, 4 matrix , 5 for not defined
 	int linedec; //line no of declaration
 	int offset;
 	int scopeDepth;
@@ -67,6 +67,7 @@ typedef struct SymbolTableNode{
 	struct SymbolTableNode** child;
 	int start;
 	int end;
+	int counter;
 } SymbolTableNode;
 
 typedef struct SymbolTableNode* SymbolTablePtr;

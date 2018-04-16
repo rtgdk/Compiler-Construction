@@ -11,7 +11,7 @@ extern int hash4(char* str);
 extern void initSymbolTable();
 extern int get_int(char *arr);
 extern void addVariable(variable v,SymbolTablePtr st);
-extern void addFunction(function f, int start, int end);
+extern void addFunction(function f, int start, int end,int type);
 extern int getType(parsetree pt) ;
 extern int getWidth(int type);
 extern void addVariableID(parsetree node, int type, SymbolTablePtr b);

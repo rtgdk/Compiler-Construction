@@ -17,6 +17,7 @@ Rohit Lodha
 #define GRN   "\x1B[32m"
 #define RESET "\x1B[0m"
 
+//TODO : Error and Matrix Implementation
 int soffset;
 
 char* types[] = {"INTEGER","REAL","STRING","MATRIX"};
@@ -34,7 +35,7 @@ int hash4(char* str)
 
 void initSymbolTable(){
 	globalTable = (SymbolTableNode*)malloc(sizeof(SymbolTableNode));
-	globalTable->type = 1; //main;
+	globalTable->type = 5; //main;
 	globalTable->noc = 0;
 	globalTable->parent = NULL;
 	globalTable->child = NULL;
@@ -96,7 +97,7 @@ void addVariable(variable v,SymbolTablePtr st){
 	}
 }
 
-void addFunction(function f, int start, int end) /* add f to MAIN, s start e end, li is line of dec. */
+void addFunction(function f, int start, int end,int type) /* add f to MAIN, s start e end, li is line of dec. */
 {
 	//printf("reached here nochild->%d\n",currentTable->noc);
 	
@@ -140,7 +141,7 @@ void addFunction(function f, int start, int end) /* add f to MAIN, s start e end
 	}
 
 	SymbolTablePtr t = (SymbolTablePtr)malloc(sizeof(SymbolTableNode));
-	t->type = 2;
+	t->type = type;
 	int i;
 	t->f = f;
 	t->noc = 0;
@@ -357,7 +358,7 @@ void makeST(parsetree root)
 			//printf("Output list added\n");
 			int start = root->parent->child[0]->tk.lineno;
 			int end = root->parent->child[11]->tk.lineno;
-			addFunction(f , start , end);
+			addFunction(f , start , end,2);
 			//printf("Function added\n");
 			
 		}
@@ -374,7 +375,7 @@ void makeST(parsetree root)
 		f.linedec = root->tk.lineno;
 		int start = root->tk.lineno;
 		int end = root->parent->child[4]->tk.lineno;
-		addFunction(f,start,end);
+		addFunction(f,start,end,1);
 	}	
 	else if(root->ruleNode->type==0 && root->tk.type==IF){
 		function f;
@@ -388,7 +389,7 @@ void makeST(parsetree root)
 		currentScope++;
 		int start = root->tk.lineno;
 		int end = root->parent->child[6]->child[0]->tk.lineno;
-		addFunction(f,start,end);
+		addFunction(f,start,end,3);
 	}
 	else if(root->ruleNode->type==0 && root->tk.type==ELSE){
 		currentTable = currentTable->parent;
@@ -402,7 +403,7 @@ void makeST(parsetree root)
 		f.linedec = root->tk.lineno;
 		int start = root->tk.lineno;
 		int end = root->parent->child[3]->tk.lineno;
-		addFunction(f,start,end);
+		addFunction(f,start,end,4);
 	}
 	else if(root->ruleNode->type==0 && root->tk.type==ENDIF){
 		currentTable = currentTable->parent;
@@ -450,7 +451,7 @@ void print_symboltable(SymbolTablePtr br)
 {
 	int i;
 
-	if(br->type != 1)
+	if(br->type != 5)
 	{
 		for(i = 0 ; i < VariableTableSize ; i++)
 		{

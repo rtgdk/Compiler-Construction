@@ -74,11 +74,13 @@ int main(int argc, char *argv[])
 		else if(n==5){
 		    initialiseLexer();
 		    PT = parseInputSourceCode(argv[1],parsetable);
+		    makeST(PT);
 		    ast = makeAST(PT);
 		    printf("\n Inorder Traversal of AST\n\n");
 		    printf("     lexCurNode lineno          token valIfNum          parentNodeSymbol isLeaf               NodeSymbol\n");
 	 		printf("--------------------------------------------------------------------------------------------------------\n");
 		    printASTree(ast);
+		    printAST2(ast);
 		}
 		else if(n==6){
 		    initialiseLexer();
