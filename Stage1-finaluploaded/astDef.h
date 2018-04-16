@@ -30,6 +30,7 @@ typedef struct astnode{
 	struct astnode* next;
 	GrammarNode ruleNode;
 	SymbolTablePtr st;
+	int type; //1 int, 2 real, 3 string, 4 matrix , 5 for not defined, 6 for int x int
 } astnode;
 
 typedef astnode* AStree;

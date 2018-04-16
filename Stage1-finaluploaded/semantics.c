@@ -43,7 +43,7 @@ int getTypeID(char* name , SymbolTablePtr b, int lineno)
 		{
 			if(strcmp(temp->v.name , name) == 0 && )
 			{
-				if(temp->v.linedec <= lineno)
+				if(temp->v.linedecdec <= lineno)
 					return (temp->v.type);
 				else
 					printf("ERROR: Line No %d : Variable %s not declared.",lineno,name);
@@ -123,13 +123,13 @@ function checkFunction(char* fname, SymbolTablePtr b, int lineno) //Check if fun
 		}
 		else{
 			found = false;
-			for(i = 0 ; i < temp->no_of_children ; i++)
+			for(i = 0 ; i < temp->noc ; i++)
 			{
-				if(strcmp(temp->children[i]->f.name , fname) == 0)
+				if(strcmp(temp->child[i]->f.name , fname) == 0)
 				{
-					if(lineno >= temp->children[i]->f.linedec)
+					if(lineno >= temp->child[i]->f.linedec)
 					{
-						return temp->children[i]->f;
+						return temp->child[i]->f;
 					}
 					else
 					{
@@ -152,39 +152,39 @@ function checkFunction(char* fname, SymbolTablePtr b, int lineno) //Check if fun
 	return f;	
 }
 
-bool output_type(astptr root , function *f)
+bool outputType(astptr root , function *f)
 {
 	int i;
 
-	if(root->is_terminal && root->name.tok.type == ID)
+	if(root->ruleNode->type==0 && root->tk.type == ID)
 	{
-		variablenodeptr vptr = (variablenodeptr)malloc(sizeof(varnode));
-		vptr->v.type = getTypeID(root->name.tok.lexeme , root->scope, root->name.tok.line); 
-		f->output_count++;
+		variablenodeptr vptr = (variablenodeptr)malloc(sizeof(variablenode));
+		vptr->v.type = getTypeID(root->tk.lexeme , root->st, root->tk.lineno); 
+		f->noOfOutput++;
 		
-		if(vptr->v.type.type == NOTDEF)
+		if(vptr->v.type == 5)
 		{
-			printf( "ERROR : No such variable %s in line %d\n" , root->name.tok.lexeme , root->name.tok.line );
-			err = true;
+			printf( "ERROR : No such variable %s in line %d\n" , root->tk.lexeme , root->tk.lineno );
+			//err = true;
 			return false;
 		}
 
-		strcpy(vptr->v.name, root->name.tok.lexeme);
-		vptr->v.line = root->name.tok.line;
-		if(vptr->v.type.isarr)
-		{
-			printf( "ERROR : Array %s cannot be returned in call to function at line %d\n",vptr->v.name,vptr->v.line );
-			err = true;
-			return false;
-		}
+		strcpy(vptr->v.name, root->tk.lexeme);
+		vptr->v.linedec = root->tk.lineno;
+		// if(vptr->v.type.isarr)
+		// {
+		// 	printf( "ERROR : Array %s cannot be returned in call to function at line %d\n",vptr->v.name,vptr->v.linedec );
+		// 	err = true;
+		// 	return false;
+		// }
 
 		vptr->next = NULL;
 
-		if(f->output_type == NULL)
-			f->output_type = vptr;
+		if(f->outputType == NULL)
+			f->outputType = vptr;
 		else
 		{
-			variablenodeptr temp = f->output_type;
+			variablenodeptr temp = f->outputType;
 			while(temp->next != NULL)
 			{
 				temp = temp->next;
@@ -193,117 +193,117 @@ bool output_type(astptr root , function *f)
 		}		
 	}
 
-	for(i = 0 ; i < root->no_of_children ; i++)
+	for(i = 0 ; i < root->noc ; i++)
 	{
-		bool res = output_type(root->children[i] , f);
+		bool res = outputType(root->child[i] , f);
 		if(!res)
 			return false;
 	}
 	return true;
 }
 
-void input_type(astptr root , function *f)
+void inputType(astptr root , function *f)
 {
 	int i;
 
-	if(root->is_terminal && root->name.tok.type == ID)
+	if(root->ruleNode->type==0 && root->tk.type == ID)
 	{
-		int ty = getTypeID(root->name.tok.lexeme,root->scope,root->name.tok.line);
+		int ty = getTypeID(root->tk.lexeme,root->st,root->tk.lineno);
 
-		if(ty.type == NOTDEF)
+		if(ty.type == 5)
 		{
-			printf( "ERROR : No such variable %s in line %d\n" , root->name.tok.lexeme , root->name.tok.line );
-			err = true;
+			printf( "ERROR : No such variable %s in line %d\n" , root->tk.lexeme , root->tk.lineno );
+			//err = true;
 			return;
 		}
 		
-		if(!ty.isarr)
-		{
+		// if(!ty.isarr)
+		// {
 			f->noOfInput++;
-
-			variablenodeptr vptr = (variablenodeptr)malloc(sizeof(varnode));
-			strcpy(vptr->v.name, root->name.tok.lexeme);
-			vptr->v.line = root->name.tok.line;
-			vptr->v.type = getTypeID(root->name.tok.lexeme , root->scope, root->name.tok.line);
+			variablenodeptr vptr = (variablenodeptr)malloc(sizeof(variablenode));
+			strcpy(vptr->v.name, root->tk.lexeme);
+			vptr->v.linedec = root->tk.lineno;
+			vptr->v.type = getTypeID(root->tk.lexeme , root->st, root->tk.lineno);
 			vptr->v.scope = 0;
 			vptr->v.offset = 0; 
 			vptr->next = NULL;
 
-			if(f->input_type == NULL)
-				f->input_type = vptr;
+			if(f->inputType == NULL)
+				f->inputType = vptr;
 			else
 			{
-				variablenodeptr temp = f->input_type;
+				variablenodeptr temp = f->inputType;
 				while(temp->next != NULL)
 				{
 					temp = temp->next;
 				}
 				temp->next = vptr;
 			}
-		}
-		else
-		{
-			int j;
-			for(j = ty.low ; j <= ty.high ; j++)
-			{
-				f->noOfInput++;
+		//}
+		//for matrix down below
+		// else
+		// {
+		// 	int j;
+		// 	for(j = ty.low ; j <= ty.high ; j++)
+		// 	{
+		// 		f->noOfInput++;
 
-				variablenodeptr vptr = (variablenodeptr)malloc(sizeof(varnode));
-				strcpy(vptr->v.name, root->name.tok.lexeme);
-				vptr->v.line = root->name.tok.line;
-				vptr->v.type = getTypeID(root->name.tok.lexeme , root->scope, root->name.tok.line);
-				vptr->v.scope = 0; 
-				vptr->v.offset = j;
-				vptr->next = NULL;
+		// 		variablenodeptr vptr = (variablenodeptr)malloc(sizeof(variablenode));
+		// 		strcpy(vptr->v.name, root->tk.lexeme);
+		// 		vptr->v.linedec = root->tk.lineno;
+		// 		vptr->v.type = getTypeID(root->tk.lexeme , root->st, root->tk.lineno);
+		// 		vptr->v.scope = 0; 
+		// 		vptr->v.offset = j;
+		// 		vptr->next = NULL;
 
-				if(f->input_type == NULL)
-					f->input_type = vptr;
-				else
-				{
-					variablenodeptr temp = f->input_type;
-					while(temp->next != NULL)
-					{
-						temp = temp->next;
-					}
-					temp->next = vptr;
-				}
-			}
-		}		
+		// 		if(f->inputType == NULL)
+		// 			f->inputType = vptr;
+		// 		else
+		// 		{
+		// 			variablenodeptr temp = f->inputType;
+		// 			while(temp->next != NULL)
+		// 			{
+		// 				temp = temp->next;
+		// 			}
+		// 			temp->next = vptr;
+		// 		}
+		// 	}
+		// }		
 	}
 
-	for(i = 0 ; i < root->no_of_children ; i++)
-		input_type(root->children[i] , f);
+	for(i = 0 ; i < root->noc ; i++)
+		inputType(root->child[i] , f);
 }
 
-bool compat_fn(function f1, function f2, int line) //check if defined and called fn are type checked
+bool compatibleFunction(function f1, function f2, int line) //check if defined and called fn are type checked
 {
-	char * char_type[] = {"INTEGER" , "REAL" , "BOOLEAN"};	
+	char * char_type[] = {"INTEGER" , "REAL" , "STRNG","MATRIX"};	
 
 	if(f1.noOfInput != f2.noOfInput)
 	{
 		printf( "ERROR : Count of input variables passed to the call of function %s do not match on line %d\n" , f2.name , line );
-		err = true;
+		//err = true;
 		return false;
 	}
 
-	if(f1.output_count != f2.output_count)
+	if(f1.noOfOutput != f2.noOfOutput)
 	{
 		printf( "ERROR : Count of output variables returned from call to function %s do not match on line %d\n" , f2.name , line );
-		err = true;
+		//err = true;
 		return false;
 	}
 
-	variablenodeptr tempi1 = f1.input_type;
-	variablenodeptr tempo1 = f1.output_type;
-	variablenodeptr tempi2 = f2.input_type;
-	variablenodeptr tempo2 = f2.output_type;
+	variablenodeptr tempi1 = f1.inputType;
+	variablenodeptr tempo1 = f1.outputType;
+	variablenodeptr tempi2 = f2.inputType;
+	variablenodeptr tempo2 = f2.outputType;
 	int arg_no = 1;
 	while(tempi1 != NULL)
 	{
-		if(tempi1->v.type.type != tempi2->v.type.type)
+		if(tempi1->v.type != tempi2->v.type)
 		{
-			printf( "ERROR : Input argument %d of function %s at line %d: Expected type %s but found type %s\n",arg_no,f2.name,line,char_type[(int)tempi2->v.type.type],char_type[(int)tempi1->v.type.type] );
-			err = true;
+			printf( "ERROR : Input argument %d of function %s at line %d: Expected type %s but found type %s\n",arg_no,f2.name,line,char_type[(int)tempi2->v.type],char_type[(int)tempi1->v.type] );
+			//err = true;
 			return false;
 		}
 		arg_no++;
@@ -314,10 +314,10 @@ bool compat_fn(function f1, function f2, int line) //check if defined and called
 	arg_no = 1;
 	while(tempo1 != NULL)
 	{
-		if(tempo1->v.type.type != tempo2->v.type.type)
+		if(tempo1->v.type != tempo2->v.type)
 		{
-			printf( "ERROR : Output argument %d of function %s at line %d : Expected type %s but found type %s\n",arg_no,f2.name,line,char_type[(int)tempo2->v.type.type],char_type[(int)tempo1->v.type.type] );
-			err = true;
+			printf( "ERROR : Output argument %d of function %s at line %d : Expected type %s but found type %s\n",arg_no,f2.name,line,char_type[(int)tempo2->v.type],char_type[(int)tempo1->v.type] );
+			//err = true;
 			return false;
 		}
 		arg_no++;
@@ -329,469 +329,354 @@ bool compat_fn(function f1, function f2, int line) //check if defined and called
 	return true;
 }
 
-void get_asttype(astptr aptr) // type checking in expression
+//op is operator_low/high precendence
+bool checkOperatorType(AStree op, AStree ex1, AStree ex2){
+	if(op->child[0]->tk.type == PLUS){
+		// check for strings and matrix ???
+		if(ex1->type==ex2->type) return true;
+		
+	}
+	else if(op->child[0]->tk.type == MINUS){
+		if(ex1->type==ex2->type){
+			if (ex1->type==1 || ex1->type==2 || ex1->type==4) return true;
+			
+		}
+		
+	}
+	else if(op->child[0]->tk.type == MUL){
+		if(ex1->type==ex2->type){
+			if (ex1->type==1 || ex1->type==2) return true;
+			
+		}
+	}
+	else if(op->child[0]->tk.type == DIV){
+		if(ex1->type==ex2->type){
+			if (ex1->type==1 || ex1->type==2 ) return true;
+			
+		}
+	}
+	return false;
+}
+
+void getASTtype(AStree ast) // type checking in expression
 {
-	// if(aptr->is_terminal)
-	//  	printf("%s %d\n",aptr->name.tok.lexeme,aptr->name.tok.line);
+	// if(ast->ruleNode->type==0)
+	//  	printf("%s %d\n",ast->tk.lexeme,ast->tk.lineno);
 	// else
-	//  	printf("%s\n",str_characters[(int)aptr->name.c]);
-	char * char_type[] = {"INTEGER" , "REAL" , "BOOLEAN"};
-	if(aptr->name.c == expression)
+	//  	printf("%s\n",str_characters[(int)ast->name.c]);
+	char * char_type[] = {"INTEGER" , "REAL" , "STRNG","MATRIX"};	
+	if(strcmp(ast->name,"<rightHandSide_type1>")==0)
 	{
-		if((!aptr->children[0]->is_terminal) && (aptr->children[0]->name.c == arithmeticOrBooleanExpr))
-		{
-			get_asttype(aptr->children[0]);
-			aptr->type = aptr->children[0]->type;
-		}
-		else if(aptr->children[1]->name.c == arithmeticExpr)
-		{
-			get_asttype(aptr->children[1]);
-			aptr->type = aptr->children[1]->type;
-		}
+		getASTtype(ast->child[0]);
+		ast->type = ast->child[0]->type;
+		return;
 	}
-	else if(aptr->name.c == arithmeticOrBooleanExpr)
+	else if(strcmp(ast->name,"<arithmeticExpression>")==0)
 	{
-		get_asttype(aptr->children[0]);
-		if(aptr->children[0]->type == NOTDEF)
-			aptr->type = NOTDEF;
-		else if(aptr->children[1]->children[0]->name.tok.type == eps)
-			aptr->type = aptr->children[0]->type;
-		else if(aptr->children[0]->type != BOOL)
-		{
-			aptr->type = NOTDEF;
-			printf( "ERROR : Expected boolean expression on left side of operator %s at line %d\n",aptr->children[1]->children[0]->children[0]->name.tok.lexeme,aptr->children[1]->children[0]->children[0]->name.tok.line );
-			err = true;
+		getASTtype(ast->child[0]);
+		if(ast->child[0]->type == 5){
+			ast->type = 5;
+			return;
 		}
-			//printf("Invalid expression type\n");
-		else
-		{
-			get_asttype(aptr->children[1]);
-			if(aptr->children[1]->type == NOTDEF)
-				aptr->type = NOTDEF;
-				//printf("Invalid expression type\n");
-			else if(aptr->children[1]->type == BOOL)
-				aptr->type = BOOL;
+		if(ast->child[1]->noc==0){
+			ast->type = ast->child[0]->type;
+			return;
 		}
+		getASTtype(ast->child[1]);
+		if(ast->child[1]->type == 5){
+			ast->type = 5;
+			return;
+		}
+		if(checkOperatorType(ast->child[1]->child[0],ast->child[0],ast->child[1]->child[1])){
+			ast->type = ast->child[0]->type;
+			return;
+		}
+		else{
+			ast->type = 5;
+			return;
+		}
+		return;
 	}
-	else if(aptr->name.c == N7)
+	else if(strcmp(ast->name,"<arithmeticTerm>")==0)
 	{
-		get_asttype(aptr->children[1]);
-		if(aptr->children[1]->type == BOOL)
-		{
-			if(aptr->children[2]->children[0]->name.tok.type == eps)
-				aptr->type = BOOL;
-			else
-			{
-				get_asttype(aptr->children[2]);
-				if(aptr->children[2]->type == NOTDEF)
-					aptr->type = NOTDEF;
-				else if(aptr->children[2]->type == BOOL)
-					aptr->type = BOOL;
+		getASTtype(ast->child[0]);
+		if(ast->child[0]->type == 5){
+			ast->type = 5;
+			return;
+		}
+		if(ast->child[1]->noc==0){
+			ast->type = ast->child[0]->type;
+			return;
+		}
+		getASTtype(ast->child[1]);
+		if(ast->child[1]->type == 5){
+			ast->type = 5;
+			return;
+		}
+		if(checkOperatorType(ast->child[1]->child[0],ast->child[0],ast->child[1]->child[1])){
+			ast->type = ast->child[0]->type;
+			return;
+		}
+		else{
+			ast->type = 5;
+			return;
+		}
+		return;
+	}
+	else if(strcmp(ast->name,"<arithmeticFactor>")==0)
+	{
+		getASTtype(ast->child[0]);
+		ast->type = ast->child[0]->type;
+		return;
+	}
+	else if(strcmp(ast->name,"<moreTerms_two>")==0)
+	{
+		getASTtype(ast->child[1]);
+		if(ast->child[1]->type==5){
+			ast->type = 5;
+			return
+		}
+		if(ast->child[2]->noc==0){ // epsilon
+			ast->type = ast->child[1]->type
+			return;
+		}
+		else{
+			getASTtype(ast->child[2]);
+			if(ast->child[2]->type==5){
+				ast->type = 5;
+				return
+			}
+			if(checkOperatorType(ast->child[2]->child[0],ast->child[1],ast->child[2]->child[1])){
+				ast->type = ast->child[1]->type;
+				return;
 			}
 		}
-		else
-		{ 
-			aptr->type = NOTDEF;
-			printf( "ERROR : Expected boolean expression on right side of operator %s at line %d\n",aptr->children[0]->children[0]->name.tok.lexeme,aptr->children[0]->children[0]->name.tok.line );
-			err = true;
+	}
+	
+	else if(strcmp(ast->name,"<moreTerms_one>")==0){
+		getASTtype(ast->child[1]);
+		if(ast->child[1]->type==5){
+			ast->type = 5;
+			return
+		}
+		if(ast->child[2]->noc==0){ // epsilon
+			ast->type = ast->child[1]->type
+			return;
+		}
+		else{
+			getASTtype(ast->child[2]);
+			if(ast->child[2]->type==5){
+				ast->type = 5;
+				return
+			}
+			if(checkOperatorType(ast->child[2]->child[0],ast->child[1],ast->child[2]->child[1])){
+				ast->type = ast->child[1]->type;
+				return;
+			}
+		}
+		return;
+	}
+
+	else if(strcmp(ast->name,"<sizeExpression>")==0)
+	{
+		getASTtype(ast->child[0]); // if not considering SIZE as node
+		if (ast->child[0]->type==3){
+			ast->type = 1;
+		}
+		else(ast->child[0]->type=4){
+			ast->type = 6 //int x int // but it should show error
 		}
 
 	}
-	else if(aptr->name.c == AnyTerm)
+	else if(strcmp(ast->name,"<funCallStmt>")==0)
 	{
-		get_asttype(aptr->children[0]);
-		if(aptr->children[0]->type == NOTDEF)
-			aptr->type = NOTDEF;
-		else if(aptr->children[1]->children[0]->name.tok.type == eps)
-			aptr->type = aptr->children[0]->type;
-		else if((aptr->children[0]->type != INT) && (aptr->children[0]->type != RE))
-		{
-			aptr->type = NOTDEF;
-			printf( "ERROR : Expected integer or real expression on left side of operator %s at line %d\n",aptr->children[1]->children[0]->children[0]->name.tok.lexeme,aptr->children[1]->children[0]->children[0]->name.tok.line );
-			err = true;
 
-		}
-			//printf("Invalid expression type\n");
-		else
-		{
-			get_asttype(aptr->children[1]);
-			if(aptr->children[1]->type == NOTDEF)
-				aptr->type = NOTDEF;
-			else if(aptr->children[0]->type != aptr->children[1]->type)
-			{
-				//printf("Invalid expression type\n");
-				aptr->type = NOTDEF;
-				printf( "ERROR : Type mismatch between left side : %s and right side : %s of operator %s at line %d\n",char_type[(int)aptr->children[0]->type],char_type[(int)aptr->children[1]->type],aptr->children[1]->children[0]->children[0]->name.tok.lexeme,aptr->children[1]->children[0]->children[0]->name.tok.line );
-				err = true;
+	}
+	
+	else if(strcmp(ast->name,"<var>")==0){
 
-			}
-			else 
-				aptr->type = BOOL;
-		}
-	}
-	else if(aptr->name.c == N8)
-	{
-		get_asttype(aptr->children[1]);
-		if((aptr->children[1]->type == BOOL) || (aptr->children[1]->type == NOTDEF))
+		if(ast->child[0]->tk.type == NUM)
 		{
-			aptr->type = NOTDEF;
-			printf( "ERROR : Expected integer or real expression on right side of operator %s at line %d\n",aptr->children[0]->children[0]->name.tok.lexeme,aptr->children[0]->children[0]->name.tok.line );
-			err = true;		
+			ast->type = 1;
+			//printf("int %s\n",ast->child[0]->tk.lexeme);
 		}
-		else
+		else if(ast->child[0]->tk.type == RNUM)
 		{
-			if(aptr->children[2]->children[0]->name.tok.type == eps)
-				aptr->type = aptr->children[1]->type;
-			else
-			{
-				get_asttype(aptr->children[2]);
-				if(aptr->children[2]->type == NOTDEF)
-					aptr->type = NOTDEF;
-				else if(aptr->children[1]->type != aptr->children[2]->type)
-				{
-					aptr->type = NOTDEF;
-					printf( "ERROR : Type mismatch between left side : %s and right side : %s of operator %s at line %d\n",char_type[(int)aptr->children[1]->type],char_type[(int)aptr->children[2]->type],aptr->children[0]->children[0]->name.tok.lexeme,aptr->children[0]->children[0]->name.tok.line );
-					err = true;		
-				}
-				else
-					aptr->type = aptr->children[2]->type;
-			}
-		}
-	}
-	else if(aptr->name.c == arithmeticExpr)
-	{
-		get_asttype(aptr->children[0]);
-		if(aptr->children[0]->type == NOTDEF)
-			aptr->type = NOTDEF;
-		else if(aptr->children[1]->children[0]->name.tok.type == eps)
-			aptr->type = aptr->children[0]->type;
-		else if((aptr->children[0]->type != INT) && (aptr->children[0]->type != RE))
-		{
-			aptr->type = NOTDEF;
-			printf( "ERROR : Expected integer or real expression on left side of operator %s at line %d\n",aptr->children[1]->children[0]->children[0]->name.tok.lexeme,aptr->children[1]->children[0]->children[0]->name.tok.line );
-			err = true;
-		}
-		else
-		{
-			get_asttype(aptr->children[1]);
-			if(aptr->children[1]->type == NOTDEF) 
-				aptr->type = NOTDEF;
-			else if(aptr->children[0]->type != aptr->children[1]->type)
-			{
-				//printf("Invalid expression type\n");
-				aptr->type = NOTDEF;
-				printf( "ERROR : Type mismatch between left side : %s and right side : %s of operator %s at line %d\n",char_type[(int)aptr->children[0]->type],char_type[(int)aptr->children[1]->type],aptr->children[1]->children[0]->children[0]->name.tok.lexeme,aptr->children[1]->children[0]->children[0]->name.tok.line );
-				err = true;
-			}
-			else
-				aptr->type = aptr->children[1]->type;
-		}
-	}
-	else if(aptr->name.c == N4)
-	{
-		get_asttype(aptr->children[1]);
-		if(aptr->children[1]->type == NOTDEF)
-			aptr->type = NOTDEF;
-		else if(aptr->children[1]->type == BOOL)
-		{
-			aptr->type = NOTDEF;
-			printf( "ERROR : Expected integer or real expression on right side of operator %s at line %d\n",aptr->children[0]->children[0]->name.tok.lexeme,aptr->children[0]->children[0]->name.tok.line );
-			err = true;
-		}
-		else
-		{
-			if(aptr->children[2]->children[0]->name.tok.type == eps)
-				aptr->type = aptr->children[1]->type;
-			else
-			{
-				get_asttype(aptr->children[2]);
-				if(aptr->children[2]->type == NOTDEF)
-					aptr->type = NOTDEF;
-				else if(aptr->children[1]->type != aptr->children[2]->type)
-				{
-					aptr->type = NOTDEF;
-					printf(  "ERROR : Type mismatch between left side : %s and right side : %s of operator %s at line %d\n",char_type[(int)aptr->children[1]->type],char_type[(int)aptr->children[2]->type],aptr->children[0]->children[0]->name.tok.lexeme,aptr->children[0]->children[0]->name.tok.line );
-					err = true;
-				}
-				else
-					aptr->type = aptr->children[2]->type;
-			}
-		}
-	}
-	else if(aptr->name.c == term)
-	{
-		get_asttype(aptr->children[0]);
-		if(aptr->children[0]->type == NOTDEF)
-			aptr->type = NOTDEF;
-		else if(aptr->children[1]->children[0]->name.tok.type == eps)
-			aptr->type = aptr->children[0]->type;
-		else if((aptr->children[0]->type != INT) && (aptr->children[0]->type != RE))
-		{
-			aptr->type = NOTDEF;
-			printf( "ERROR : Expected integer or real expression on left side of operator %s at line %d\n",aptr->children[1]->children[0]->children[0]->name.tok.lexeme,aptr->children[1]->children[0]->children[0]->name.tok.line );
-			err = true;
-		}
-		else
-		{
-			get_asttype(aptr->children[1]);
-			if(aptr->children[1]->type == NOTDEF)
-				aptr->type = NOTDEF;
-			else if(aptr->children[0]->type != aptr->children[1]->type)
-		    {
-				aptr->type = NOTDEF;
-				printf( "ERROR : Type mismatch between left side : %s and right side : %s of operator %s at line %d\n",char_type[(int)aptr->children[0]->type],char_type[(int)aptr->children[1]->type],aptr->children[1]->children[0]->children[0]->name.tok.lexeme,aptr->children[1]->children[0]->children[0]->name.tok.line );
-				err = true;
-			}
-			else
-				aptr->type = aptr->children[1]->type;
-		}
-	}
-	else if(aptr->name.c == N5)
-	{
-		get_asttype(aptr->children[1]);
-		if(aptr->children[1]->type == NOTDEF)
-			aptr->type = NOTDEF;
-		else if(aptr->children[1]->type == BOOL)
-		{
-			aptr->type = NOTDEF;
-			printf( "ERROR : Expected integer or real expression on right side of operator %s at line %d\n",aptr->children[0]->children[0]->name.tok.lexeme,aptr->children[0]->children[0]->name.tok.line );
-			err = true;
-		}
-		else
-		{
-			if(aptr->children[2]->children[0]->name.tok.type == eps)
-				aptr->type = aptr->children[1]->type;
-			else
-			{
-				get_asttype(aptr->children[2]);
-				if(aptr->children[2]->type == NOTDEF)
-					aptr->type = NOTDEF;
-				else if(aptr->children[1]->type != aptr->children[2]->type)
-				{
-					aptr->type = NOTDEF;
-					printf( "ERROR : Type mismatch between left side : %s and right side : %s of operator %s at line %d\n",char_type[(int)aptr->children[1]->type],char_type[(int)aptr->children[2]->type],aptr->children[0]->children[0]->name.tok.lexeme,aptr->children[0]->children[0]->name.tok.line );
-					err = true;
-				}
-				else
-					aptr->type = aptr->children[2]->type;
-			}
-		}
-	}
-	else if(aptr->name.c == factor)
-	{
-		get_asttype(aptr->children[0]);
-		aptr->type = aptr->children[0]->type;
-	}
-	else if(aptr->name.c == var)
-	{
-		if(aptr->children[0]->name.tok.type == NUM)
-		{
-			aptr->type = INT;
-			//printf("int %s\n",aptr->children[0]->name.tok.lexeme);
-		}
-		else if(aptr->children[0]->name.tok.type == RNUM)
-		{
-			aptr->type = RE;
+			ast->type = 2;
 			//printf("real\n");
 		}
-		else if(aptr->children[0]->name.tok.type == ID)
+		else if(ast->child[0]->tk.type == STR)
 		{
-			int vt = getTypeID(aptr->children[0]->name.tok.lexeme,aptr->children[0]->scope,aptr->children[0]->name.tok.line);
-			if(vt.type == NOTDEF)
+			ast->type = 3;
+			//printf("real\n");
+		}
+		else if(strcmp(ast->child[0]->name,"<matrix>"))
+		{
+			// FUnction call for matrix type check;
+			ast->type = 4;
+
+			//printf("real\n");
+		}
+		else if(ast->child[0]->tk.type == ID)
+		{
+			// fucntion check for matrix element
+			int vt = getTypeID(ast->child[0]->tk.lexeme,ast->child[0]->scope,ast->child[0]->tk.linenono);
+			if(vt == 5)
 			{
-				aptr->type = NOTDEF;
-				printf( "ERROR : No such variable %s in line %d\n" , aptr->children[0]->name.tok.lexeme , aptr->children[0]->name.tok.line );
-				err = true;
-			}
-			else if(aptr->children[1]->children[0]->name.tok.type == eps && vt.isarr)
-			{
-				aptr->type = NOTDEF;
-				printf( "ERROR : Array %s at line %d not allowed in expression\n",aptr->children[0]->name.tok.lexeme,aptr->children[0]->name.tok.line );
-				err = true;
+				ast->type = 5;
+				printf( "ERROR : No such variable %s in line %d\n" , ast->child[0]->tk.lexeme , ast->child[0]->tk.lineno );
+				//err = true;
 			}
 			else
-				aptr->type = vt.type;
-		}
+				ast->type = vt;
+		}	
 	}
 }
 
-void semantic_analysis(astptr root)
+// CHECK FOR IF ELSE BLOCK
+void semanticAnalysis(astptr root)
 {
-	// if(root->is_terminal)
-	// 	printf("%s %d\n",root->name.tok.lexeme,root->name.tok.line);
+	// if(root->ruleNode->type==0)
+	// 	printf("%s %d\n",root->tk.lexeme,root->tk.lineno);
 	// else
 	// 	printf("%s\n",str_characters[(int)root->name.c]);
-	char * char_type[] = {"INTEGER" , "REAL" , "BOOLEAN"};
+	char * char_type[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};
 
-	if(root->is_terminal && root->name.tok.type == ID && root->parent->name.c != module && root->parent->name.c != moduleReuseStmt && root->parent->name.c != moduleDeclaration)
+	if(root->ruleNode->type==0 && root->tk.type == ID)// && root->parent->name.c != module && root->parent->name.c != moduleReuseStmt && root->parent->name.c != moduleDeclaration)
 	{
-		// int vt = getTypeID(root->name.tok.lexeme , root->scope, root->name.tok.line);
+		// int vt = getTypeID(root->tk.lexeme , root->st, root->tk.lineno);
 		
-		// if(vt.type == NOTDEF)
+		// if(vt == 5)
 		// {
-		// 	printf("ERROR --: No such variable %s in line %d\n" , root->name.tok.lexeme , root->name.tok.line);
+		// 	printf("ERROR --: No such variable %s in line %d\n" , root->tk.lexeme , root->tk.lineno);
 		// 	return;
 		// }
-		int vt = getTypeID(root->name.tok.lexeme , root->scope, root->name.tok.line);
-		root->type = vt.type;
+		int vt = getTypeID(root->tk.lexeme , root->st, root->tk.lineno);
+		root->type = vt;
 
-		if(root->parent->name.c == assignmentStmt)
+		if(strcmp(root->parent->name,"<leftHandSide_singleVar>")
 		{
 		
-			if(vt.type == NOTDEF)
+			if(vt == 5)
 			{
-				printf( "ERROR : No such variable %s in line %d\n" , root->name.tok.lexeme , root->name.tok.line );
-				err = true;
+				printf( "ERROR : No such variable %s in line %d\n" , root->tk.lexeme , root->tk.lineno );
+				//err = true;
 			}
 
-			if(root->parent->children[1]->children[0]->name.c == lvalueIDStmt)
+			if(strcmp(root->parent->parent->child[1]->name,"<rightHandSide_type1>"))
 			{
-				get_asttype(root->parent->children[1]->children[0]->children[0]);
-				typ t = root->parent->children[1]->children[0]->children[0]->type;
-				if(t == NOTDEF)
+				getASTtype(root->parent->parent->child[1]);
+				typ t = root->parent->parent->child[1]->type;
+				if(t == 5)
 				{
-					printf( "ERROR : Expression on right side at line %d is not well formed\n",root->name.tok.line );
-					err = true;
+					printf( "ERROR : Expression on right side at line %d is not well formed\n",root->tk.lineno );
+					//err = true;
 					return;
 				}
-				if(vt.isarr || vt.type != t)
+				if(vt != t)
 				{
-					printf( "ERROR : Type mismatch for ID %s at line %d\n",root->name.tok.lexeme,root->name.tok.line );
-					err = true;
-					return;
-				}
-				if(insidefor)
-				{
-					if(strcmp(root->name.tok.lexeme , forvar) == 0)
-					{
-						printf( "ERROR : Redefinition of index variable %s at line %d\n",root->name.tok.lexeme,root->name.tok.line );
-						err = true;
-					}	
-				}
-			}
-			else
-			{
-				int vt = getTypeID(root->name.tok.lexeme , root->scope, root->name.tok.line);
-		
-				if(vt.type == NOTDEF)
-				{
-					printf( "ERROR : No such variable %s in line %d\n" , root->name.tok.lexeme , root->name.tok.line );
-					err = true;
-					return;
-				}
-				get_asttype(root->parent->children[1]->children[0]->children[1]);
-				typ t = root->parent->children[1]->children[0]->children[1]->type;
-				if(t == NOTDEF)
-				{
-					printf( "ERROR : Expression on right side at line %d is not well formed\n",root->name.tok.line );
-					err = true;
-					return;
-				}
-				if(vt.type != t)
-				{
-					printf( "ERROR : Type mismatch for ID %s at line %d\n",root->name.tok.lexeme,root->name.tok.line );
+					printf( "ERROR : Type mismatch for ID %s at line %d\n",root->tk.lexeme,root->tk.lineno );
 					err = true;
 					return;
 				}
 			}
+			//Code for matrix assignment
+			// else
+			// {	
+			// 	getASTtype(root->parent->child[1]->child[0]->child[1]);
+			// 	typ t = root->parent->child[1]->child[0]->child[1]->type;
+			// 	if(t == 5)
+			// 	{
+			// 		printf( "ERROR : Expression on right side at line %d is not well formed\n",root->tk.lineno );
+			// 		err = true;
+			// 		return;
+			// 	}
+			// 	if(vt != t)
+			// 	{
+			// 		printf( "ERROR : Type mismatch for ID %s at line %d\n",root->tk.lexeme,root->tk.lineno );
+			// 		err = true;
+			// 		return;
+			// 	}
+			// }
 
-			variablenodeptr vpt = getID(root->name.tok.lexeme , root->scope);
-			markAssigned(vpt , root->scope);
+			variablenodeptr vpt = getID(root->tk.lexeme , root->st);
+			markAssigned(vpt , root->st);
 		}
 		else
 		{
-			if(vt.type == NOTDEF)
+			if(vt == 5)
 			{
-				printf( "ERROR : No such variable %s in line %d\n" , root->name.tok.lexeme , root->name.tok.line );
-				err = true;
+				printf( "ERROR : No such variable %s in line %d\n" , root->tk.lexeme , root->tk.lineno );
+				//err = true;
 				return;
 			}
 		}	
 	}
-	else if(root->is_terminal && root->name.tok.type == ID && root->parent->name.c == moduleReuseStmt)
+	else if(root->ruleNode->type==0 && root->tk.type == FUNID && strcmp(root->parent->name,"<funCallStmt>"))
 	{
 
-		function fn = checkFunction(root->name.tok.lexeme , root->scope, root->name.tok.line);
-		
+		function fn = checkFunction(root->tk.lexeme , root->st, root->tk.lineno);
 		if(fn.noOfInput == -1)
 			return;
-
 		function f;
-		f.output_count = 0;
-		f.output_type = NULL;
+		f.noOfOutput = 0;
+		f.outputType = NULL;
 		f.noOfInput = 0;
-		f.input_type = NULL;
+		f.inputType = NULL;
 		bool out_res;
-
-		if(root->parent->children[0]->children[0]->name.c == eps)
-		{
-			f.output_count = 0;
-			f.output_type = NULL;
-		}
-		else
-			out_res = output_type(root->parent->children[0]->children[0] , &f);
+		out_res = outputType(root->parent->child[0]->child[0] , &f);
 		// if(!out_res)
 		//  	return;
 	
 
-		if(root->parent->children[2]->children[0]->name.c == eps)
-		{
-			f.noOfInput = 0;
-			f.input_type = NULL;
-		}
-		else
-			input_type(root->parent->children[2] , &f);
+		// if(root->parent->child[2]->child[0]->name.c == eps)
+		// {
+		// 	f.noOfInput = 0;
+		// 	f.inputType = NULL;
+		// }
+		// else
+		inputType(root->parent->child[2] , &f);
 
-		bool compat = compat_fn(f , fn, root->name.tok.line);
+		bool compat = compatibleFunction(f , fn, root->tk.lineno);
 
 		// if(!compat)
 		// 	return;
 
-		//variablenodeptr vpt = getID(root->name.tok.lexeme , root->scope);
-		variablenodeptr vpt = f.output_type;
+		//variablenodeptr vpt = getID(root->tk.lexeme , root->st);
+		variablenodeptr vpt = f.outputType;
 
 		while(vpt != NULL)
 		{
-			markAssigned(vpt , root->scope);
-
-			if(insidefor)
-			{
-				if(strcmp(vpt->v.name , forvar) == 0)
-				{
-					printf( "ERROR : Redefinition of index variable %s at line %d\n", forvar ,root->name.tok.line );
-					err = true;
-				}	
-			}
-
+			markAssigned(vpt , root->st);
 			vpt = vpt->next;
 		}
 
 		// function func = f; 
-		// variablenodeptr tempi = func.input_type;
+		// variablenodeptr tempi = func.inputType;
 
 		// printf("INPUT : %d\n",func.noOfInput);
 		// while(tempi != NULL)
 		// {
-		// 	printf("%s %s %d %d %d\n" , tempi->v.name , char_type[(int)tempi->v.type.type] , tempi->v.line , tempi->v.scope, tempi->v.offset);
+		// 	printf("%s %s %d %d %d\n" , tempi->v.name , char_type[(int)tempi->v.type] , tempi->v.linedec , tempi->v.scope, tempi->v.offset);
 		// 	tempi = tempi->next;
 		// }
-		// variablenodeptr tempo = func.output_type;
+		// variablenodeptr tempo = func.outputType;
 
-		// printf("OUTPUT : %d\n",func.output_count);
+		// printf("OUTPUT : %d\n",func.noOfOutput);
 		// while(tempo != NULL)
 		// {
-		// 	printf("%s %s %d %d %d\n" , tempo->v.name , char_type[(int)tempo->v.type.type] , tempo->v.line , tempo->v.scope, tempo->v.offset);
+		// 	printf("%s %s %d %d %d\n" , tempo->v.name , char_type[(int)tempo->v.type] , tempo->v.linedec , tempo->v.scope, tempo->v.offset);
 		// 	tempo = tempo->next;
 		// }
 
 	}
-	else if(root->is_terminal && (root->name.tok.type == END) && (root->parent->name.c == moduleDef))
+	else if(root->ruleNode->type==0 && (root->tk.type == END) && (strcmp(root->parent->name,"<functionDef>")))
 	{
-		function f = root->scope->f;
-		variablenodeptr out_ptr = f.output_type;
+		function f = root->st->f;
+		variablenodeptr out_ptr = f.outputType;
 		while(out_ptr != NULL)
 		{
-			variablenodeptr t = getID(out_ptr->v.name,root->scope);
+			variablenodeptr t = getID(out_ptr->v.name,root->st);
 			if(t != NULL && !t->v.assigned)
 			{
 				printf( "ERROR : Output parameter %s of function %s is not defined\n",out_ptr->v.name,f.name );
@@ -800,91 +685,94 @@ void semantic_analysis(astptr root)
 			out_ptr = out_ptr->next;
 		}
 	}
-	else if(root->is_terminal && (root->name.tok.type == START) && (root->parent->name.c == iterativeStmt))
-	{
-		if(root->parent->children[0]->name.tok.type == FOR)
-		{
-			insidefor = true;
-			strcpy(forvar , root->parent->children[1]->name.tok.lexeme);
-		}
-		else
-		{
-			get_asttype(root->parent->children[1]);
-			if(root->parent->children[1]->type != BOOL)
-			{
-				printf( "ERROR : Conditional expression of while loop in line %d must be of boolean type\n",root->parent->children[0]->name.tok.line );
-				err = true;
-			}
-		}		
-	}
-	else if(root->is_terminal && (root->name.tok.type == START) && (root->parent->name.c == conditionalStmt))
-	{
-		insideswitch = true;
-		int vt = getTypeID(root->parent->children[0]->name.tok.lexeme,root->scope,root->parent->children[0]->name.tok.line);
-		if(vt.type == NOTDEF)
-		{
-			printf( "ERROR : No such variable %s in line %d\n" , root->parent->children[0]->name.tok.lexeme , root->parent->children[0]->name.tok.line );
-			err = true;
-			return;
-		}
-		sw_type = vt.type;
-		if(sw_type == RE)
-		{
-			printf( "ERROR : Switch case variable cannot be real at line %d\n",root->parent->children[0]->name.tok.line );
-			err = true;
-		}
-		else if(vt.isarr)
-		{
-			printf( "ERROR : Switch case variable %s cannot be of array type at line %d\n",root->parent->children[0]->name.tok.lexeme,root->parent->children[0]->name.tok.line );
-			err = true;
-		}
-		else if(sw_type == INT)
-		{
-			if(root->parent->children[3]->children[0]->name.tok.type == eps)
-			{
-				printf( "ERROR : Default case statement required in switch statement starting from line %d\n",root->parent->children[0]->name.tok.line );
-				err = true;
-			}	
-		}
-		else if(sw_type == BOOL)
-		{
-			if(root->parent->children[3]->children[0]->name.tok.type != eps)
-			{
-				printf( "ERROR : Default case statement not allowed in switch statement starting from line %d\n",root->parent->children[0]->name.tok.line );	
-				err = true;
-			}
-		}
-	}
-	else if(!root->is_terminal && root->name.c == value)
-	{
-		if(sw_type == INT && root->children[0]->name.tok.type != NUM)
-		{
-			printf( "ERROR : Expected integer case label at line %d\n",root->children[0]->name.tok.line );
-			err = true;
-		}	
-		else if(sw_type == BOOL && root->children[0]->name.tok.type == NUM)
-		{
-			printf( "ERROR : Expected boolean case label at line %d\n",root->children[0]->name.tok.line );
-			err = true;
-		}	
-	}
+	// CHECK FOR IF ELSE BLOCK
 
-	else if(root->is_terminal && (root->name.tok.type == END) && (root->parent->name.c == iterativeStmt))
-	{
-		insidefor = false;
-	}
-	else if(root->is_terminal && (root->name.tok.type == END) && (root->parent->name.c == conditionalStmt))
-	{
-		insideswitch = false;
-	}
-	else if(root->is_terminal && root->name.tok.type == NUM)
-		root->type = INT;
-	else if(root->is_terminal && root->name.tok.type == RNUM)
-		root->type = RE;
+
+	// else if(root->ruleNode->type==0 && (root->tk.type == START) && (root->parent->name.c == iterativeStmt))
+	// {
+	// 	if(root->parent->child[0]->tk.type == FOR)
+	// 	{
+	// 		insidefor = true;
+	// 		strcpy(forvar , root->parent->child[1]->tk.lexeme);
+	// 	}
+	// 	else
+	// 	{
+	// 		getASTtype(root->parent->child[1]);
+	// 		if(root->parent->child[1]->type != BOOL)
+	// 		{
+	// 			printf( "ERROR : Conditional expression of while loop in line %d must be of boolean type\n",root->parent->child[0]->tk.lineno );
+	// 			err = true;
+	// 		}
+	// 	}		
+	// }
+	// else if(root->ruleNode->type==0 && (root->tk.type == START) && (root->parent->name.c == conditionalStmt))
+	// {
+	// 	insideswitch = true;
+	// 	int vt = getTypeID(root->parent->child[0]->tk.lexeme,root->st,root->parent->child[0]->tk.lineno);
+	// 	if(vt == 5)
+	// 	{
+	// 		printf( "ERROR : No such variable %s in line %d\n" , root->parent->child[0]->tk.lexeme , root->parent->child[0]->tk.lineno );
+	// 		err = true;
+	// 		return;
+	// 	}
+	// 	sw_type = vt;
+	// 	if(sw_type == RE)
+	// 	{
+	// 		printf( "ERROR : Switch case variable cannot be real at line %d\n",root->parent->child[0]->tk.lineno );
+	// 		err = true;
+	// 	}
+	// 	else if(vt.isarr)
+	// 	{
+	// 		printf( "ERROR : Switch case variable %s cannot be of array type at line %d\n",root->parent->child[0]->tk.lexeme,root->parent->child[0]->tk.lineno );
+	// 		err = true;
+	// 	}
+	// 	else if(sw_type == INT)
+	// 	{
+	// 		if(root->parent->child[3]->child[0]->tk.type == eps)
+	// 		{
+	// 			printf( "ERROR : Default case statement required in switch statement starting from line %d\n",root->parent->child[0]->tk.lineno );
+	// 			err = true;
+	// 		}	
+	// 	}
+	// 	else if(sw_type == BOOL)
+	// 	{
+	// 		if(root->parent->child[3]->child[0]->tk.type != eps)
+	// 		{
+	// 			printf( "ERROR : Default case statement not allowed in switch statement starting from line %d\n",root->parent->child[0]->tk.lineno );	
+	// 			err = true;
+	// 		}
+	// 	}
+	// }
+
+	// else if(!root->ruleNode->type==0 && strcmp(root->name, "value"))
+	// {
+	// 	if(sw_type == INT && root->child[0]->tk.type != NUM)
+	// 	{
+	// 		printf( "ERROR : Expected integer case label at line %d\n",root->child[0]->tk.lineno );
+	// 		err = true;
+	// 	}	
+	// 	else if(sw_type == BOOL && root->child[0]->tk.type == NUM)
+	// 	{
+	// 		printf( "ERROR : Expected boolean case label at line %d\n",root->child[0]->tk.lineno );
+	// 		err = true;
+	// 	}	
+	// }
+
+	// else if(root->ruleNode->type==0 && (root->tk.type == END) && (root->parent->name.c == iterativeStmt))
+	// {
+	// 	insidefor = false;
+	// }
+	// else if(root->ruleNode->type==0 && (root->tk.type == END) && (root->parent->name.c == conditionalStmt))
+	// {
+	// 	insideswitch = false;
+	// }
+	else if(root->ruleNode->type==0 && root->tk.type == NUM)
+		root->type = 1;
+	else if(root->ruleNode->type==0 && root->tk.type == RNUM)
+		root->type = 2;
 
 
 	int i;
-
-	for(i = 0 ; i < root->no_of_children ; i++)
-		semantic_analysis(root->children[i]);
+	for(i = 0 ; i < root->noc ; i++)
+		semanticAnalysis(root->child[i]);
 }
