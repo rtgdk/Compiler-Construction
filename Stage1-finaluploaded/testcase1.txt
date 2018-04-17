@@ -1,5 +1,7 @@
 _main[     ]
 	int a;
 	a = a + 9;
+	int b;
+	b = @a;
 end
 

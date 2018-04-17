@@ -1,7 +1,7 @@
 _main[]
 	matrix mat1, mat2;
 	read(mat1);
-	mat2 = [6, 1, 10; 6, 10, 0] + a12;
+	mat2 = [6, 1, 10; 6, 10, 0] + a1;
 	
 	#a12 will be tokenized as ID NUM and will cause syntax error above
 	#as a1 will be the valid ID and then remaining 2 will be the NUM 
@@ -12,12 +12,13 @@ _main[]
 	# whether sizes of mat1 and mat2 are compatible for addition or not 
 	#will be seen by the semantic analyser later
 	
-	print(5);
+	print(a2);
 	
 	# Syntax error above
 	
 	
-	String s = "abc";
+	string s;
+	s = "abc";
 
 	#above has two errors one in the recognition of the lexeme String as ID 
 	# and not that as STRING
@@ -25,7 +26,7 @@ _main[]
 	
 	#also ensure that your lexer ignores comments and white spaces properly
 	a = a          + 20;
-	a = jkewhdkjehjdewjhjhefhjhdfhjhdsjfkgjgh9 + aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2;
+	#a = jkewhdkjehjdewjhjhefhjhdfhjhdsjfkgjgh9 + aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2;
 
 	#above are the identifiers of length larger than 20, check that your lexer reports the error
 
@@ -38,7 +39,7 @@ _main[]
 	a = @s;
 	#above is syntactically correct
 
-	a = @"number";
+	#a = @"number";
 	#above is syntactically wrong
 
 

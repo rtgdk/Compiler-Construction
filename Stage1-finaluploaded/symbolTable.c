@@ -366,7 +366,7 @@ void makeST(parsetree root)
 			addInputList(root->parent->child[7] , &f);
 			//printf("Input list added\n");
 			addOutputList(root->parent->child[2],&f);
-			//printf("Output list added\n");
+			//printf("Output list added %s\n",f.outputList->v.name);
 			int start = root->parent->child[0]->tk.lineno;
 			int end = root->parent->child[11]->tk.lineno;
 			addFunction(f , start , end,2);
