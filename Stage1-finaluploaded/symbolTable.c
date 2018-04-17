@@ -82,7 +82,7 @@ void addVariable(variable v,SymbolTablePtr st){
 			if(strcmp(temp->v.name , v.name) == 0 && temp->v.offset == v.offset)
 			{
 				//err = true;
-				printf( "ERROR: Variable '%s' already declared at line %d and cannot be redeclared at line %d\n", v.name, temp->v.linedec, v.linedec );
+				printf( "Line No.%d: Variable '%s' already declared at line %d. Variable redeclaration is not allowed.\n",v.linedec, v.name, temp->v.linedec, v.linedec );
 				return;
 			}
 			temp = temp->next;
@@ -90,7 +90,7 @@ void addVariable(variable v,SymbolTablePtr st){
 		if((strcmp(temp->v.name , v.name) == 0) && (temp->v.offset == v.offset))
 		{
 				//err = true;
-				printf( "ERROR: Variable '%s' already declared at line %d and cannot be redeclared at line %d\n", v.name, temp->v.linedec, v.linedec );
+				printf( "Line No.%d: Variable '%s' already declared at line %d. Variable redeclaration is not allowed.\n",v.linedec, v.name, temp->v.linedec, v.linedec );
 				return;
 		}
 		temp->next = vnode;
@@ -107,37 +107,48 @@ void addFunction(function f, int start, int end,int type) /* add f to MAIN, s st
 
 		for(i = 0 ; i < currentTable->noc ; i++)
 		{
-			if(strcmp(currentTable->child[i]->f.name , f.name) == 0)
+			if(currentTable->child[i]->type==2 && strcmp(currentTable->child[i]->f.name , f.name) == 0)
 			{
-				if(!currentTable->child[i]->f.defined)
-				{
-					currentTable->child[i]->f = f;
-					currentTable = currentTable->child[i];
-					variablenodeptr inp = f.inputList;
-					while(inp != NULL)
-					{
-						addVariable(inp->v,currentTable);
-						inp = inp->next;
-					}
-					variablenodeptr op = f.outputList;
-					while(op != NULL)
-					{
-						addVariable(op->v,currentTable);
-						op = op->next;
-					}
-					currentTable->child[i]->start = start;
-					currentTable->child[i]->end = end;
-					return;
-				}	
-				else
-				{
+				// if(!currentTable->child[i]->f.defined)
+				// {
+				// 	currentTable->child[i]->f = f;
+				// 	currentTable = currentTable->child[i];
+				// 	variablenodeptr inp = f.inputList;
+				// 	while(inp != NULL)
+				// 	{
+				// 		addVariable(inp->v,currentTable);
+				// 		inp = inp->next;
+				// 	}
+				// 	variablenodeptr op = f.outputList;
+				// 	while(op != NULL)
+				// 	{
+				// 		addVariable(op->v,currentTable);
+				// 		op = op->next;
+				// 	}
+				// 	currentTable->child[i]->start = start;
+				// 	currentTable->child[i]->end = end;
+				// 	return;
+				// }	
+				// else
+				// {
 					//err = true;
-					printf( "ERROR : Redefinition of function %s\n" , f.name );
-				}	
+				printf( "Line No.%d: Function %s already declared in line %d.Function Overloading(Redefination of function) is not allowed within the same scope.\n" ,f.linedec, f.name,currentTable->child[i]->f.linedec );
+				//}	
 				
 			}
 		}
 
+	}
+	// Added new by me
+	if(type==2){
+		SymbolTablePtr temp = currentTable;
+		while(temp->parent!=NULL){
+			if(temp->type==2 && strcmp(temp->f.name , f.name) == 0)
+			{
+				printf( "Line No.%d: Function %s already declared in line %d.Function Overloading(Redefination of function) is not allowed within the same scope.\n" ,f.linedec, f.name,temp->f.linedec );
+			}
+			temp = temp->parent;
+		}
 	}
 
 	SymbolTablePtr t = (SymbolTablePtr)malloc(sizeof(SymbolTableNode));
@@ -503,5 +514,5 @@ void printST()
 	printf("Identifier       Scope 	 nesting_level  scope_Parent     type     width    offset\n" );
 	//sno = 1;
 	print_symboltable(globalTable);
-	printf( "Symbol table generated successfully\n" );
+	printf( "\nSymbol table generated successfully\n" );
 }

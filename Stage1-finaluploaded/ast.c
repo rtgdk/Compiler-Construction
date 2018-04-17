@@ -228,18 +228,18 @@ AStree parseToAST(parsetree PT){
 			}
 			else {
 				if (PT->child[i]->tk.type==MAIN || PT->child[i]->tk.type==IF || PT->child[i]->tk.type==FUNCTION){
-					printf("Here\n");
+					//printf("Here\n");
 					currentTable->counter++;
 					currentTable = currentTable->child[currentTable->counter-1];
 				}
 				else if (PT->child[i]->tk.type==ELSE){
-					printf("Here2\n");
+					//printf("Here2\n");
 					currentTable = currentTable->parent;
 					currentTable->counter++;
 					currentTable = currentTable->child[currentTable->counter-1];
 				}
 				else if (PT->child[i]->tk.type==ENDIF || PT->child[i]->tk.type==END){
-					printf("Here3\n");
+					//printf("Here3\n");
 					currentTable = currentTable->parent;
 				}
 				if (present2(PT->child[i]->ruleNode->name)){
@@ -357,7 +357,7 @@ AStree makeAST(parsetree PT){
     currentTable = globalTable;
     AStree ast = parseToAST(PT);
     //printf("Here %s\n",ast->ruleNode->name);
-    ast = modifyAST(ast);
+    //ast = modifyAST(ast);
     return ast;
 }
 

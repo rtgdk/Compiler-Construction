@@ -390,6 +390,7 @@ tokenInfo getNextToken(FILE *fp, int g){
 				case 38: //_funntion
 					switch(ch){
 						case 'a' ... 'z':
+						case 'A' ... 'Z':
 						case '0' ... '9': tk.lexeme[lexemecount++] = ch; state = 38; break;
 						case '[':
 						case '(': 
