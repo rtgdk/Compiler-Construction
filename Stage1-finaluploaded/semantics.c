@@ -417,13 +417,43 @@ bool compatibleFunction2(function f1, function f2, int line, int* type) //check 
 	return true;
 }
 
+
+
+
 //op is operator_low/high precendence
 bool checkOperatorType(AStree op, AStree ex1, AStree ex2){
 	//printf("Checking for operator type %s,---%d---%d\n",op->child[0]->tk.lexeme,ex1->type,ex2->type);
 	char* char_type[] = {"INTEGER","REAL","STRING","MATRIX"};
+	//printf("ope%d--%d\n",ex1->type,ex2->type);
 	if(op->child[0]->tk.type == PLUS){
 		// check for strings and matrix ???
-		if(ex1->type==ex2->type) return true;
+		if(ex1->type==ex2->type) {
+			if(ex1->type==4){
+				AStree temp = ex1;
+				while(strcmp(temp->ruleNode->name,"<var>")!=0){
+					temp = temp->child[0];
+				}
+				temp = temp->child[0];
+				AStree temp2 = ex2;
+				while(strcmp(temp2->ruleNode->name,"<var>")!=0){
+					temp2 = temp2->child[0];
+				}
+				temp2 = temp2->child[0];
+				variablenodeptr v1 = getID(temp->tk.lexeme,temp->st);
+				variablenodeptr v2 = getID(temp2->tk.lexeme,temp2->st);
+				//printf("%d--%d\n",v1->v.col,v2->v.col);
+				if(v1->v.row!=v2->v.row){
+					printf( "Line No. %d: Matrix Row Size mismatch for '%s' operator. Got %d rows(%s) on left and %d rows(%s) on right side\n",op->child[0]->tk.lineno, op->child[0]->tk.lexeme, v1->v.row,v1->v.name,v2->v.row,v2->v.name);
+					return false;
+				}
+				if(v1->v.col!=v2->v.col){
+					printf( "Line No. %d: Matrix Column Size mismatch for '%s' operator. Got %d columns on left and %d columns on right side\n",op->child[0]->tk.lineno, op->child[0]->tk.lexeme, v1->v.col,v1->v.name,v2->v.col,v2->v.name);
+					return false;
+				}
+			}
+			return true;
+		}
+
 		else {
 			printf( "Line No. %d: Type mismatch for '%s' operator. Got %s on left and %s on right side\n",op->child[0]->tk.lineno, op->child[0]->tk.lexeme, char_type[ex1->type-1],char_type[ex2->type-1]);
 			
@@ -597,6 +627,10 @@ void checkRightSideType1(AStree ast) // type checking in expression
 				ast->type = ast->child[1]->type;
 				return;
 			}
+			else{
+				ast->type=5;
+				return;
+			}
 		}
 	}
 	
@@ -622,6 +656,10 @@ void checkRightSideType1(AStree ast) // type checking in expression
 			// }
 			if(checkOperatorType(ast->child[2]->child[0],ast->child[1],ast->child[2]->child[1])){
 				ast->type = ast->child[1]->type;
+				return;
+			}
+			else{
+				ast->type=5;
 				return;
 			}
 		}
@@ -1084,6 +1122,8 @@ void semanticAnalysis(AStree root)
 		root->type = 1;
 	else if(root->ruleNode->type==0 && root->tk.type == RNUM)
 		root->type = 2;
+	else if(root->ruleNode->type==0 && root->tk.type == STR)
+		root->type = 3;
 
 
 	int i;

@@ -493,17 +493,17 @@ void updateMatSize(parsetree rhs) // rhs is RHS TYPE1
 				calculateCol(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[1],&noc); //matrix->rows->row->remainingcol
 				//printf("Here5 %d\n",noc);
 				if (noc>10){
-					printf("Line No. %d: Matrix %s can have maximum 10 columns",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+					printf("Line No. %d: Matrix %s can have maximum 10 columns\n",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
 					return;
 				}
 				bool cr = calculateRow(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[1],&nor,&noc); //matrix->rows->moreRows
-				printf("Here6 %d --%d\n",nor,noc);
+				//printf("Here6 %d --%d\n",nor,noc);
 				if(!cr) {
-					printf("Line No. %d: Mismatch no of columns while assigning matrix %s",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+					printf("Line No. %d: Mismatch no of columns while assigning matrix %s\n",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
 					return;
 				}
 				if (nor>10){
-					printf("Line No. %d: Matrix %s can have maximum 10 rows",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+					printf("Line No. %d: Matrix %s can have maximum 10 rows\n",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
 					return;
 				}
 				//printf("here7 %s \n",matVar->v.name);
