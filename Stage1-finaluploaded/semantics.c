@@ -26,7 +26,7 @@ int flag = 0;
 int laterline;
 int getTypeID(char* name , SymbolTablePtr b, int lineno)
 {	
-	//printf("Called for %s\n",name);
+	
 	if(b == NULL )
 	{
 		//printf("Returning\n");
@@ -39,6 +39,7 @@ int getTypeID(char* name , SymbolTablePtr b, int lineno)
 		}
 		return 5; //NOT Defined
 	}
+	//printf("Called for %s--%s\n",name,b->f.name);
 	//printf("get typeIDDDD  %s-%d-%s\n ",name,lineno,b->f.name);
 	int pos = hash4(name)%VariableTableSize;
 	//printf("pos %d\n",pos);
@@ -305,7 +306,7 @@ bool inputType(AStree root , function *f)
 
 bool compatibleFunction(function f1, function f2, int line) //check if defined and called fn are type checked
 {
-	char * char_type[] = {"INTEGER" , "REAL" , "STRNG","MATRIX"};	
+	char * char_type[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};	
 
 	if(f1.noOfInput != f2.noOfInput)
 	{
@@ -326,11 +327,12 @@ bool compatibleFunction(function f1, function f2, int line) //check if defined a
 	variablenodeptr tempi2 = f2.inputList;
 	variablenodeptr tempo2 = f2.outputList;
 	int arg_no = 1;
+	//printf("%d--%d\n",tempi1->v.type,tempi2->v.type);
 	while(tempi1 != NULL)
 	{
 		if(tempi1->v.type != tempi2->v.type)
 		{
-			printf( "Line No.%d : Mismatch in input argument %d of function %s : Expected type %s but found type %s\n",line,arg_no,f2.name,char_type[tempi2->v.type-1],char_type[tempi1->v.type-1] );
+			printf( "Line No.%d : Mismatch in input argument %d of function %s : Expected type %s but found type %s\n",f1.linedec,arg_no,f2.name,char_type[tempi2->v.type-1],char_type[tempi1->v.type-1] );
 			//err = true;
 			return false;
 		}
@@ -344,7 +346,7 @@ bool compatibleFunction(function f1, function f2, int line) //check if defined a
 	{
 		if(tempo1->v.type != tempo2->v.type)
 		{
-			printf( "Line No.%d : Mismatch in input argument %d of function %s : Expected type %s but found type %s\n",line,arg_no,f2.name,char_type[tempo2->v.type-1],char_type[tempo1->v.type-1] );
+			printf( "Line No.%d : Mismatch in output argument %d of function %s : Expected type %s but found type %s\n",line,arg_no,f2.name,char_type[tempo2->v.type-1],char_type[tempo1->v.type-1] );
 			//err = true;
 			return false;
 		}
@@ -359,7 +361,7 @@ bool compatibleFunction(function f1, function f2, int line) //check if defined a
 
 bool compatibleFunction2(function f1, function f2, int line, int* type) //check if defined and called fn are type checked
 {
-	char * char_type[] = {"INTEGER" , "REAL" , "STRNG","MATRIX"};	
+	char * char_type[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};	
 
 	if(f1.noOfInput != f2.noOfInput)
 	{
@@ -471,7 +473,7 @@ void getASTtype(AStree ast) // type checking in expression
 	// else
 	//  	printf("%s\n",str_characters[(int)ast->ruleNode->name.c]);
 	//printf("getASTtype----%s\n",ast->ruleNode->name);
-	char * char_type[] = {"INTEGER" , "REAL" , "STRNG","MATRIX"};	
+	char * char_type[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};	
 	if(strcmp(ast->ruleNode->name,"<rightHandSide_type1>")==0)
 	{
 		//printf("got type4 %s\n",ast->tk.lexeme);
@@ -639,6 +641,7 @@ void getASTtype(AStree ast) // type checking in expression
 			return;
 		}
 		else{
+			ast->type = vt;
 			return;
 		}
 		// else if (ast->child[0]->type==4){
@@ -658,11 +661,12 @@ void getASTtype(AStree ast) // type checking in expression
 		f.outputList = NULL;
 		f.noOfInput = 0;
 		f.inputList = NULL;
-		// bool out_res;
-		// out_res = outputType(root->parent->parent->parent->child[0], &f);
-		// if (out_res==false){
-		// 	printf("Line No. %d: Type Mismatch for Output Type of Function call %s\n",root->tk.lineno, root->tk.lexeme);
-		// }
+		f.linedec = ast->child[0]->tk.lineno;
+		bool out_res;
+		out_res = outputType(ast->parent->parent->child[0], &f);
+		if (!out_res){
+			return;
+		}
 		//printf("Function check successfull\n");
 		// if(!out_res)
 		//  	return;
@@ -682,12 +686,10 @@ void getASTtype(AStree ast) // type checking in expression
 
 		//printf("Function check successfull\n");
 		int type;
-		bool compat = compatibleFunction2(f , fn, ast->tk.lineno, &type);
-		if(compat){
-			ast->type = type;
-		}
-		else{
+		bool compat = compatibleFunction(f , fn, ast->tk.lineno);
+		if(!compat){
 			ast->type = 5; // not defined
+			return;
 		}
 		//printf("Function check successfull3\n");
 
@@ -695,13 +697,13 @@ void getASTtype(AStree ast) // type checking in expression
 		// 	return;
 
 		//variablenodeptr vpt = getID(root->tk.lexeme , root->st);
-		// variablenodeptr vpt = f.outputList;
+		variablenodeptr vpt = f.outputList;
 
-		// while(vpt != NULL)
-		// {
-		// 	markAssigned(vpt , root->st);
-		// 	vpt = vpt->next;
-		// }
+		while(vpt != NULL)
+		{
+			markAssigned(vpt , ast->child[0]->st);
+			vpt = vpt->next;
+		}
 
 		// function func = f; 
 		// variablenodeptr tempi = func.inputList;
@@ -720,8 +722,8 @@ void getASTtype(AStree ast) // type checking in expression
 		// 	printf("%s %s %d %d %d\n" , tempo->v.name , char_type[(int)tempo->v.type] , tempo->v.linedec , tempo->v.scopeDepth, tempo->v.offset);
 		// 	tempo = tempo->next;
 		// }
+		ast->type = f.outputList->v.type;
 		return;
-
 	}
 	
 	else if(strcmp(ast->ruleNode->name,"<var>")==0){
@@ -800,7 +802,75 @@ bool checkIOStmt(AStree ast){
 	return false;
 }
 
+bool checkRelationalOp(AStree ast){
+	char* char_type[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};
+	tp c1 = ast->parent->child[0]->child[0]->tk.type;
+	tp c2 = ast->parent->child[2]->child[0]->tk.type;
+	if(c1==ID){
+		int vt = getTypeID(ast->parent->child[0]->child[0]->tk.lexeme,ast->parent->child[0]->child[0]->st,ast->parent->child[0]->child[0]->tk.lineno);
+		//printf("Here in ID check again%s -%s\n",ast->child[0]->tk.lexeme,ast->child[0]->st->f.name);
+		if(vt == 5)
+		{
+			ast->type = 5;
+			//printf("In Vt 5");
+			// printf( "Line No.%d : Variable3 %s not declared\n" ,  ast->child[0]->tk.lineno,ast->child[0]->tk.lexeme );
+			return false;
+			//err = true;
+		}
+		else if(vt==3 || vt == 4){
+			//printf("Here-returning-getAST\n");
+			printf( "Line No.%d : Invalid Type '%s'(%s) for '%s' operation. Only INTEGER and REAL types allowed for relational operations.\n" , ast->child[0]->tk.lineno, char_type[vt-1],ast->parent->child[0]->child[0]->tk.lexeme, ast->child[0]->tk.lexeme);
+			ast->type = vt;
+			return false;
+		}
+		else {
+			ast->parent->child[0]->type =  vt;
+		}
 
+	}
+	else if(c1 == NUM){
+		ast->parent->child[0] = 1; //INT
+	}
+	else if(c1 == RNUM){
+		ast->parent->child[0] = 2; //REAL
+	}
+
+	if(c2==ID){
+		int vt = getTypeID(ast->parent->child[2]->child[0]->tk.lexeme,ast->parent->child[2]->child[0]->st,ast->parent->child[2]->child[0]->tk.lineno);
+		//printf("Here in ID check again%s -%s\n",ast->child[0]->tk.lexeme,ast->child[0]->st->f.name);
+		if(vt == 5)
+		{
+			ast->type = 5;
+			//printf("In Vt 5");
+			// printf( "Line No.%d : Variable3 %s not declared\n" ,  ast->child[0]->tk.lineno,ast->child[0]->tk.lexeme );
+			return false;
+			//err = true;
+		}
+		else if(vt==3 || vt == 4){
+			//printf("Here-returning-getAST\n");
+			printf( "Line No.%d : Invalid Type '%s'(%s) for '%s' operation. Only INTEGER and REAL types allowed for relational operations.\n" , ast->child[0]->tk.lineno, char_type[vt-1],ast->parent->child[2]->child[0]->tk.lexeme, ast->child[0]->tk.lexeme);
+			ast->type = vt;
+			return false;
+		}
+		else {
+			ast->parent->child[0]->type =  vt;
+		}
+
+	}
+	else if(c2 == NUM){
+		ast->parent->child[2] = 1; //INT
+	}
+	else if(c2 == RNUM){
+		ast->parent->child[2] = 2; //REAL
+	}
+	if(ast->parent->child[0]->type!= ast->parent->child[2]->type){
+		printf( "Line No.%d : Type Mismatch for for '%s' operation. Got %s(%s) on left and %s(%s) on right.\n" , ast->child[0]->tk.lineno,ast->child[0]->tk.lexeme ,char_type[ast->parent->child[0]->type-1],ast->parent->child[0]->child[0]->tk.lexeme,char_type[ast->parent->child[2]->type-1],ast->parent->child[2]->child[0]->tk.lexeme);
+		ast->type = 5;
+		return false;
+	}
+	return true;
+
+}
 // CHECK FOR IF ELSE BLOCK
 void semanticAnalysis(AStree root)
 {
@@ -824,6 +894,7 @@ void semanticAnalysis(AStree root)
 		if(strcmp(root->parent->ruleNode->name,"<leftHandSide_singleVar>")==0)
 		{
 			int vt = getTypeID(root->tk.lexeme , root->st, root->tk.lineno);
+			//printf("from here\n");
 			root->type = vt;
 			if(vt == 5)
 			{
@@ -887,6 +958,9 @@ void semanticAnalysis(AStree root)
 		// 		return;
 		// 	}
 		// }	
+	}
+	else if(root->ruleNode->type==1 && strcmp(root->ruleNode->name,"<relationalOp>")==0){
+		bool cro = checkRelationalOp(root);
 	}
 	else if(root->ruleNode->type==1 && strcmp(root->ruleNode->name,"<ioStmt>")==0){
 		if(checkIOStmt(root)){

@@ -1,7 +1,11 @@
 _main[     ]
 	int a;
 	a = a + 9;
-	int b;
-	b = @a;
+	function [int c] = _ff[int d]
+	    c = d;
+    end;
+    int b;
+    string e;
+    b = _ff(e);
 end
 
