@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		    printf("     lexCurNode lineno          token valIfNum          parentNodeSymbol isLeaf               NodeSymbol\n");
 	 		printf("--------------------------------------------------------------------------------------------------------\n");
 		    printASTree(ast);
-		    //printAST2(ast);
+		    printAST2(ast);
 		}
 		else if(n==6){
 		    initialiseLexer();

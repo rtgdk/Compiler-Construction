@@ -1,19 +1,8 @@
 _main[]
 	int a;
-	matrix m3,m,m1;
-	m = [1, 2, 3; 3, 4, 5];
-	m1 = [1, 2 ; 3, 4];
-	m3 = m+(m1+m1+m+m1);
-	function [string s]= _concatenate[string a1, string a2]
-	    matrix m2;
-	    m2 = [1, 2, 3; 3, 4, 5];
-		str1 = a1 + a2;
-	end;
 	a = 5;
 	a = a + b;
 	print(a);
-	string s1;
-	s1 = "rohit";
 end
 # semantic errors
 # line 4: variable b is not declared

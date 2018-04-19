@@ -21,6 +21,7 @@ Rohit Lodha
 int soffset;
 
 char* types[] = {"INTEGER","REAL","STRING","MATRIX"};
+
 /*
 For hashing Allowed Terminals to bucket no in HashTable
 */
@@ -33,6 +34,9 @@ int hash4(char* str)
 	return (int)(hash % VariableTableSize);
 }
 
+/*
+Initialise Symbol Table
+*/
 void initSymbolTable(){
 	globalTable = (SymbolTableNode*)malloc(sizeof(SymbolTableNode));
 	globalTable->type = 5; //main;
@@ -50,16 +54,19 @@ void initSymbolTable(){
 	currentScope = 0;
 }
 
-int get_int(char *arr) /*str to int*/
-{
-  int num = 0;
-  for(int i=0 ; arr[i]!='\0' ; i++)
-  {
-    num = num*10 + ((int)arr[i]-'0');
-  }
-  return num;
-}
+// int get_int(char *arr) /*str to int*/
+// {
+//   int num = 0;
+//   for(int i=0 ; arr[i]!='\0' ; i++)
+//   {
+//     num = num*10 + ((int)arr[i]-'0');
+//   }
+//   return num;
+// }
 
+/*
+ Add Variable to the symboltable pointed by st
+*/
 void addVariable(variable v,SymbolTablePtr st){
 	int pos = hash4(v.name);
 
@@ -97,6 +104,9 @@ void addVariable(variable v,SymbolTablePtr st){
 	}
 }
 
+/*
+Add function to tree list of currentTable with type and start and end line
+*/
 void addFunction(function f, int start, int end,int type) /* add f to MAIN, s start e end, li is line of dec. */
 {
 	//printf("reached here nochild->%d\n",currentTable->noc);
@@ -184,6 +194,9 @@ void addFunction(function f, int start, int end,int type) /* add f to MAIN, s st
 	
 }
 
+/*
+Return type of constant in the code
+*/
 int getType(parsetree pt) // returns int with int,real,str and matrix, pt has noc =1
 {
 	tp type = pt->child[0]->tk.type;
@@ -194,6 +207,9 @@ int getType(parsetree pt) // returns int with int,real,str and matrix, pt has no
 }
 
 
+/* 
+Returns width of the variable type
+*/
 int getWidth(int type){
 	if (type==1) return 2;
 	else if(type==2) return 4;
@@ -202,6 +218,9 @@ int getWidth(int type){
 	else return 2;
 }
 
+/*
+Add node's variable node ptr to symboltable b
+*/
 void addVariableID(parsetree node, int type, SymbolTablePtr b)
 {
 	if(node->ruleNode->type==0 && node->tk.type == ID)
@@ -226,48 +245,51 @@ void addVariableID(parsetree node, int type, SymbolTablePtr b)
 		addVariableID(node->child[i],type,b);
 }
 
-void addFunctionID(parsetree node)
-{
-	function f;
-	int i;
-	strcpy(f.name,node->tk.lexeme);
-	f.noOfInput = 0;
-	f.noOfOutput = 0;
-	f.defined = false;
-	f.inputList = NULL;
-	f.outputList = NULL;
-	f.linedec = node->tk.lineno;
-	SymbolTablePtr t = (SymbolTablePtr)malloc(sizeof(SymbolTableNode));
-	t->type = 2;
-	t->f = f;
-	for(i = 0 ; i < 100 ; i++)
-		t->VariableTable[i] = NULL;
-	t->noc = 0;
-	t->parent = currentTable;
-	t->child = NULL;
+// void addFunctionID(parsetree node)
+// {
+// 	function f;
+// 	int i;
+// 	strcpy(f.name,node->tk.lexeme);
+// 	f.noOfInput = 0;
+// 	f.noOfOutput = 0;
+// 	f.defined = false;
+// 	f.inputList = NULL;
+// 	f.outputList = NULL;
+// 	f.linedec = node->tk.lineno;
+// 	SymbolTablePtr t = (SymbolTablePtr)malloc(sizeof(SymbolTableNode));
+// 	t->type = 2;
+// 	t->f = f;
+// 	for(i = 0 ; i < 100 ; i++)
+// 		t->VariableTable[i] = NULL;
+// 	t->noc = 0;
+// 	t->parent = currentTable;
+// 	t->child = NULL;
 
-	if(currentTable->noc > 0)
-	{
-		SymbolTablePtr temp = currentTable->child[0];
-		int i;
+// 	if(currentTable->noc > 0)
+// 	{
+// 		SymbolTablePtr temp = currentTable->child[0];
+// 		int i;
 
-		for(i = 0 ; i < currentTable->noc ; i++)
-		{
-			if(strcmp(currentTable->child[i]->f.name , f.name) == 0)
-			{
-				//err = true;
-				printf( "ERROR : Redeclaration of function %s\n" , f.name );
-				return;
-			}
-		}
-	}
-	currentTable->child = (SymbolTablePtr*)realloc(currentTable->child,(currentTable->noc+1)*sizeof(SymbolTablePtr));
-	currentTable->child[currentTable->noc] = t;
-	//t->counter = 0;
-	currentTable->noc++;
+// 		for(i = 0 ; i < currentTable->noc ; i++)
+// 		{
+// 			if(strcmp(currentTable->child[i]->f.name , f.name) == 0)
+// 			{
+// 				//err = true;
+// 				printf( "ERROR : Redeclaration of function %s\n" , f.name );
+// 				return;
+// 			}
+// 		}
+// 	}
+// 	currentTable->child = (SymbolTablePtr*)realloc(currentTable->child,(currentTable->noc+1)*sizeof(SymbolTablePtr));
+// 	currentTable->child[currentTable->noc] = t;
+// 	//t->counter = 0;
+// 	currentTable->noc++;
 
-}
+// }
 
+/*
+Add function's input list to function's symbol table
+*/
 void addInputList(parsetree node, function *f)
 {
 	if(node->ruleNode->type==0 && (node->tk.type == ID))
@@ -305,6 +327,9 @@ void addInputList(parsetree node, function *f)
 		addInputList(node->child[i],f);
 }
 
+/*
+Add function's output list to function's symbol table
+*/
 void addOutputList(parsetree node,function *f)
 {
 	int i;
@@ -345,6 +370,9 @@ void addOutputList(parsetree node,function *f)
 variablenodeptr matVar,strVar;
 SymbolTablePtr matTable,strTable;
 
+/*
+If variable exist and is a matrix
+*/
 bool existAndMat(char* name,int lineno){
 	if(matTable == NULL )
 	{
@@ -393,6 +421,9 @@ bool existAndMat(char* name,int lineno){
 	}
 }
 
+/*
+If variable exist and is a string
+*/
 bool existAndStr(char* name,int lineno){
 	if(strTable == NULL )
 	{
@@ -441,6 +472,9 @@ bool existAndStr(char* name,int lineno){
 	}
 }
 
+/*
+Calculate columns of the matrix row rhs
+*/
 void calculateCol(parsetree rhs,int* count2){
 	// printf("%d\n",*count2);
 	if(strcmp(rhs->child[0]->ruleNode->name,"EPSILON")==0){
@@ -453,6 +487,9 @@ void calculateCol(parsetree rhs,int* count2){
 	}
 }
 
+/*
+Calculate rows of the matrix
+*/
 bool calculateRow(parsetree rhs,int* count1,int* count2){
 	// printf("--%s-%d--%d\n",rhs->ruleNode->name,*count1,*count2);
 	if(strcmp(rhs->child[0]->ruleNode->name,"EPSILON")==0){
@@ -470,6 +507,9 @@ bool calculateRow(parsetree rhs,int* count1,int* count2){
 	}
 }
 
+/*
+Update matrix  no of rows and columns
+*/
 void updateMatSize(parsetree rhs) // rhs is RHS TYPE1
 {
 	// printf("Here1 %s\n", rhs->ruleNode->name);
@@ -506,16 +546,20 @@ void updateMatSize(parsetree rhs) // rhs is RHS TYPE1
 					printf("Line No. %d: Matrix %s can have maximum 10 rows\n",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
 					return;
 				}
-				//printf("here7 %s \n",matVar->v.name);
+				//printf("here7 %s %d %d\n",matVar->v.name,nor,noc);
 				matVar->v.col = noc;
 				matVar->v.row = nor;
 				matVar->v.width = noc*nor;
+				matVar->v.assigned = true;
 				return;
 			}
 		}
 	}
 }
 
+/*
+Update string size with length of STR constant in the code
+*/
 void updateStrSize(parsetree rhs) // rhs is RHS TYPE1
 {
 //	printf("Here1 %s\n", rhs->ruleNode->name);
@@ -556,12 +600,16 @@ void updateStrSize(parsetree rhs) // rhs is RHS TYPE1
 				// matVar->v.col = noc;
 				// matVar->v.row = nor;
 				strVar->v.width = strlen(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->tk.lexeme)-2; // coz "" also included in str
+				strVar->v.assigned = true;
 				return;
 			}
 		}
 	}
 }
 
+/*
+Utility function for making Symbol Table
+*/
 void makeST(parsetree root)
 {
 	//printf("Current Node %s--Type%d\n",root->ruleNode->name,root->ruleNode->type);
@@ -696,7 +744,9 @@ void makeST(parsetree root)
 	}
 }
 
-
+/*
+To print Symbol Table
+*/
 void print_symboltable(SymbolTablePtr br)
 {
 	int i;
@@ -749,6 +799,9 @@ void print_symboltable(SymbolTablePtr br)
 
 }
 
+/*
+Utility function for printing symbol table
+*/
 void printST()
 {
 	printf("Identifier       Scope 	 nesting_level  scope_Parent     type     width    offset\n" );

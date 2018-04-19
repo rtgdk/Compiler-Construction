@@ -14,33 +14,33 @@ Rohit Lodha
 #define GRN   "\x1B[32m"
 #define RESET "\x1B[0m"
 
-char* allowedterminals[NO_OF_ALLOWED_TERMINALS] = {"MAIN",
-	"END",
-	"FUNCTION",
-	"FUNID",
-	"ID",
-	"INT",
-	"REAL",
-	"STRING",
-	"MATRIX",
-	"READ",
-	"PRINT",
-	"PLUS",
-	"MINUS",
-	"MUL",
-	"DIV",
-	"NOT",
-	"NUM",
-	"RNUM",
-	"STR",
-	"AND",
-	"OR",
-	"LT",
-	"LE",
-	"EQ",
-	"GT",
-	"GE",
-	"NE"
+char* allowedterminals[NO_OF_ALLOWED_TERMINALS] = {"AND",
+"DIV",
+"END",
+"EQ",
+"FUNCTION",
+"FUNID",
+"GE",
+"GT",
+"ID",
+"INT",
+"LE",
+"LT",
+"MAIN",
+"MATRIX",
+"MINUS",
+"MUL",
+"NE",
+"NOT",
+"NUM",
+"OR",
+"PLUS",
+"PRINT",
+"READ",
+"REAL",
+"RNUM",
+"STR",
+"STRING"
 };
 
 /*
@@ -181,24 +181,24 @@ AStree addChildren2(AStree tree, parsetree pt){
 	return tree;
 }
 
-/*
-returns next of the tree
-*/
-AStree next2(AStree tree){
-	if(tree->next!=NULL){
-		return tree->next;
-	}
-	else{
-		if(tree->parent==NULL) return tree; //main function
-		else{
-			while(tree->parent!=NULL){
-				tree = tree->parent;
-				if(tree->next!=NULL) return tree->next;
-			}
-			return tree;
-		}
-	}
-}
+// /*
+// Returns next of the tree
+// */
+// AStree next2(AStree tree){
+// 	if(tree->next!=NULL){
+// 		return tree->next;
+// 	}
+// 	else{
+// 		if(tree->parent==NULL) return tree; //main function
+// 		else{
+// 			while(tree->parent!=NULL){
+// 				tree = tree->parent;
+// 				if(tree->next!=NULL) return tree->next;
+// 			}
+// 			return tree;
+// 		}
+// 	}
+// }
 
 /*
 Convert Parse to AST, called only for non terminals (cannot be null)
@@ -284,38 +284,40 @@ void pruneAST(AStree ast,int childNo){
 /*
  To pull up the operator 
 */
-void operatorAST(AStree ast,int childNo){
-	AStree tree = ast;
-	AStree tree2;
-	int i=0;
-	//tokenizeTree2(tree->parent, tree->tk);
-	for(i=0;i<ast->parent->parent->noc;i++){
-		if(strcmp(ast->parent->parent->child[i]->ruleNode->name,ast->parent->ruleNode->name)==0){
-			break;
-		}
-	}
-	ast->parent->parent->child[i] = ast;
-	tree = ast->parent->parent;
-	ast->next = ast->parent->next;
-	ast->noc = ast->parent->noc - 1;
-	for(i=0;i < ast->noc;i++){
-		ast->child[i] = ast->parent->child[i+1];
-	}
-	ast->parent = tree;
-	tree2 = ast->parent;
-	//ast = tree->parent;
-	return ast;
-	free(tree2);
-}
+// void operatorAST(AStree ast,int childNo){
+// 	AStree tree = ast;
+// 	AStree tree2;
+// 	int i=0;
+// 	//tokenizeTree2(tree->parent, tree->tk);
+// 	for(i=0;i<ast->parent->parent->noc;i++){
+// 		if(strcmp(ast->parent->parent->child[i]->ruleNode->name,ast->parent->ruleNode->name)==0){
+// 			break;
+// 		}
+// 	}
+// 	ast->parent->parent->child[i] = ast;
+// 	tree = ast->parent->parent;
+// 	ast->next = ast->parent->next;
+// 	ast->noc = ast->parent->noc - 1;
+// 	for(i=0;i < ast->noc;i++){
+// 		ast->child[i] = ast->parent->child[i+1];
+// 	}
+// 	ast->parent = tree;
+// 	tree2 = ast->parent;
+// 	//ast = tree->parent;
+// 	return ast;
+// 	free(tree2);
+// }
 
-int isOperator(AStree ast){
-    if(strcmp(ast->ruleNode->name,"PLUS")==0 || strcmp(ast->ruleNode->name,"MINUS")==0 || strcmp(ast->ruleNode->name,"MUL")==0 || strcmp(ast->ruleNode->name,"DIV")==0){
-        return 1;
-    }
-    else{
-        return 0;
-    }
-}
+// int isOperator(AStree ast){
+//     if(strcmp(ast->ruleNode->name,"PLUS")==0 || strcmp(ast->ruleNode->name,"MINUS")==0 || strcmp(ast->ruleNode->name,"MUL")==0 || strcmp(ast->ruleNode->name,"DIV")==0){
+//         return 1;
+//     }
+//     else{
+//         return 0;
+//     }
+// }
+
+
 /* To modify the AST
 */
 AStree modifyAST(AStree ast){

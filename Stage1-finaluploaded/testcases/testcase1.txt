@@ -1,16 +1,15 @@
 _main[]
 	int a, g,h,x;
 	real b,z;
-	matrix s,mat1;
+	matrix s;
 	int u,v;	
-	mat1 = [1,2, 3; 4, 5, 6, 7; 6, 7, 8];
+	mat1 = [1,2, 3; 4, 5, 6; 6, 7, 8];
 	s = "abcd";
 	a = 2 + 5;
 	b = (a-4)*(3-1);
 	g = 10;
 	h = 9;
 	u = 12;
-	ff = fg +5;
 	read(v);
 	function [int sum, int diff]= _calculator[int c]
 		sum = c + b;
