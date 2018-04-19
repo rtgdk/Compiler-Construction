@@ -10,6 +10,7 @@ _main[]
 	g = 10;
 	h = 9;
 	u = 12;
+	ff = fg +5;
 	read(v);
 	function [int sum, int diff]= _calculator[int c]
 		sum = c + b;

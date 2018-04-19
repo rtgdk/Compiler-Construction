@@ -1,8 +1,12 @@
 _main[]
 	int a;
+	matrix m,m1;
+	m = [1, 2, 3; 3, 4, 5];
 	a = 5;
 	a = a + b;
 	print(a);
+	string s1;
+	s1 = "rohit";
 end
 # semantic errors
 # line 4: variable b is not declared

@@ -4,56 +4,55 @@
       ---------      0 --------------     ----                     ROOT     NO           <mainFunction>
               [      1            SQO     ----           <mainFunction>    YES                ---------
               ]      1            SQC     ----           <mainFunction>    YES                ---------
-         matrix      2         MATRIX     ----                   <type>    YES                ---------
+            int      2            INT     ----                   <type>    YES                ---------
       ---------      0 --------------     ----        <declarationStmt>     NO                   <type>
       ---------      0 --------------     ----                   <stmt>     NO        <declarationStmt>
-           mat1      2             ID     ----               <var_list>    YES                ---------
+              a      2             ID     ----               <var_list>    YES                ---------
       ---------      0 --------------     ----        <declarationStmt>     NO               <var_list>
-              ,      2          COMMA     ----               <more_ids>    YES                ---------
-      ---------      0 --------------     ----               <var_list>     NO               <more_ids>
-           mat2      2             ID     ----               <more_ids>    YES                ---------
           EMPTY     -1        EPSILON     ----               <more_ids>    YES                ---------
-      ---------      0 --------------     ----               <more_ids>     NO               <more_ids>
+      ---------      0 --------------     ----               <var_list>     NO               <more_ids>
               ;      2      SEMICOLON     ----        <declarationStmt>    YES                ---------
       ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
       ---------      0 --------------     ----    <stmtAndFunctionDefs>     NO      <stmtOrFunctionDef>
       ---------      0 --------------     ----           <mainFunction>     NO    <stmtAndFunctionDefs>
-           read      3           READ     ----                 <ioStmt>    YES                ---------
-      ---------      0 --------------     ----                   <stmt>     NO                 <ioStmt>
-              (      3             OP     ----                 <ioStmt>    YES                ---------
-           mat1      3             ID     ----                 <ioStmt>    YES                ---------
-              )      3             CL     ----                 <ioStmt>    YES                ---------
-              ;      3      SEMICOLON     ----                 <ioStmt>    YES                ---------
+         matrix      3         MATRIX     ----                   <type>    YES                ---------
+      ---------      0 --------------     ----        <declarationStmt>     NO                   <type>
+      ---------      0 --------------     ----                   <stmt>     NO        <declarationStmt>
+              m      3             ID     ----               <var_list>    YES                ---------
+      ---------      0 --------------     ----        <declarationStmt>     NO               <var_list>
+          EMPTY     -1        EPSILON     ----               <more_ids>    YES                ---------
+      ---------      0 --------------     ----               <var_list>     NO               <more_ids>
+              ;      3      SEMICOLON     ----        <declarationStmt>    YES                ---------
       ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
       ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
       ---------      0 --------------     ----    <stmtAndFunctionDefs>     NO  <moreStmtOrFunctionDef>
-           mat2      4             ID     ---- <leftHandSide_singleVar>    YES                ---------
+              m      4             ID     ---- <leftHandSide_singleVar>    YES                ---------
       ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
       ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
               =      4       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
               [      4            SQO     ----                 <matrix>    YES                ---------
       ---------      0 --------------     ----                    <var>     NO                 <matrix>
-              6      4            NUM        6                    <row>    YES                ---------
+              1      4            NUM        1                    <row>    YES                ---------
       ---------      0 --------------     ----                   <rows>     NO                    <row>
               ,      4          COMMA     ----   <remainingColElements>    YES                ---------
       ---------      0 --------------     ----                    <row>     NO   <remainingColElements>
-              1      4            NUM        1   <remainingColElements>    YES                ---------
+              2      4            NUM        2   <remainingColElements>    YES                ---------
               ,      4          COMMA     ----   <remainingColElements>    YES                ---------
       ---------      0 --------------     ----   <remainingColElements>     NO   <remainingColElements>
-             10      4            NUM       10   <remainingColElements>    YES                ---------
+              3      4            NUM        3   <remainingColElements>    YES                ---------
           EMPTY     -1        EPSILON     ----   <remainingColElements>    YES                ---------
       ---------      0 --------------     ----   <remainingColElements>     NO   <remainingColElements>
       ---------      0 --------------     ----                 <matrix>     NO                   <rows>
               ;      4      SEMICOLON     ----               <moreRows>    YES                ---------
       ---------      0 --------------     ----                   <rows>     NO               <moreRows>
-              6      4            NUM        6                    <row>    YES                ---------
+              3      4            NUM        3                    <row>    YES                ---------
       ---------      0 --------------     ----               <moreRows>     NO                    <row>
               ,      4          COMMA     ----   <remainingColElements>    YES                ---------
       ---------      0 --------------     ----                    <row>     NO   <remainingColElements>
-             10      4            NUM       10   <remainingColElements>    YES                ---------
+              4      4            NUM        4   <remainingColElements>    YES                ---------
               ,      4          COMMA     ----   <remainingColElements>    YES                ---------
       ---------      0 --------------     ----   <remainingColElements>     NO   <remainingColElements>
-              0      4            NUM        0   <remainingColElements>    YES                ---------
+              5      4            NUM        5   <remainingColElements>    YES                ---------
           EMPTY     -1        EPSILON     ----   <remainingColElements>    YES                ---------
       ---------      0 --------------     ----   <remainingColElements>     NO   <remainingColElements>
           EMPTY     -1        EPSILON     ----               <moreRows>    YES                ---------
@@ -65,29 +64,36 @@
           EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
       ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
       ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-              +      4           PLUS     ---- <operator_lowPrecedence>    YES                ---------
-      ---------      0 --------------     ----          <moreTerms_one>     NO <operator_lowPrecedence>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-             a1      4             ID     ----                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-          EMPTY     -1        EPSILON     ----          <matrixElement>    YES                ---------
-      ---------      0 --------------     ----                    <var>     NO          <matrixElement>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----          <moreTerms_one>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
           EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
-      ---------      0 --------------     ----          <moreTerms_one>     NO          <moreTerms_one>
+      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
       ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
               ;      4      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
       ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
       ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
       ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-              m      9             ID     ---- <leftHandSide_singleVar>    YES                ---------
+              a      5             ID     ---- <leftHandSide_singleVar>    YES                ---------
       ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
       ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =      9       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-           mat1      9             ID     ----                    <var>    YES                ---------
+              =      5       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
+              5      5            NUM        5                    <var>    YES                ---------
+      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
+      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
+      ---------      0 --------------     ----   <arithmeticExpression>     NO         <arithmeticTerm>
+          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
+      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
+      ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
+          EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
+      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
+      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
+              ;      5      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
+      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
+      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
+      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
+              a      6             ID     ---- <leftHandSide_singleVar>    YES                ---------
+      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
+      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
+              =      6       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
+              a      6             ID     ----                    <var>    YES                ---------
       ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
           EMPTY     -1        EPSILON     ----          <matrixElement>    YES                ---------
       ---------      0 --------------     ----                    <var>     NO          <matrixElement>
@@ -96,10 +102,10 @@
           EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
       ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
       ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-              +      9           PLUS     ---- <operator_lowPrecedence>    YES                ---------
+              +      6           PLUS     ---- <operator_lowPrecedence>    YES                ---------
       ---------      0 --------------     ----          <moreTerms_one>     NO <operator_lowPrecedence>
       ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-           mat2      9             ID     ----                    <var>    YES                ---------
+              b      6             ID     ----                    <var>    YES                ---------
       ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
           EMPTY     -1        EPSILON     ----          <matrixElement>    YES                ---------
       ---------      0 --------------     ----                    <var>     NO          <matrixElement>
@@ -110,147 +116,19 @@
           EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
       ---------      0 --------------     ----          <moreTerms_one>     NO          <moreTerms_one>
       ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;      9      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
+              ;      6      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
       ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
       ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
       ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-          print     15          PRINT     ----                 <ioStmt>    YES                ---------
+          print      7          PRINT     ----                 <ioStmt>    YES                ---------
       ---------      0 --------------     ----                   <stmt>     NO                 <ioStmt>
-              (     15             OP     ----                 <ioStmt>    YES                ---------
-             a2     15             ID     ----                 <ioStmt>    YES                ---------
-              )     15             CL     ----                 <ioStmt>    YES                ---------
-              ;     15      SEMICOLON     ----                 <ioStmt>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-         string     20         STRING     ----                   <type>    YES                ---------
-      ---------      0 --------------     ----        <declarationStmt>     NO                   <type>
-      ---------      0 --------------     ----                   <stmt>     NO        <declarationStmt>
-              s     20             ID     ----               <var_list>    YES                ---------
-      ---------      0 --------------     ----        <declarationStmt>     NO               <var_list>
-          EMPTY     -1        EPSILON     ----               <more_ids>    YES                ---------
-      ---------      0 --------------     ----               <var_list>     NO               <more_ids>
-              ;     20      SEMICOLON     ----        <declarationStmt>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-              s     21             ID     ---- <leftHandSide_singleVar>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
-      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =     21       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-          "abc"     21            STR     ----                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-      ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-          EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
-      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;     21      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-              a     28             ID     ---- <leftHandSide_singleVar>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
-      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =     28       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-              a     28             ID     ----                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-          EMPTY     -1        EPSILON     ----          <matrixElement>    YES                ---------
-      ---------      0 --------------     ----                    <var>     NO          <matrixElement>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-      ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-              +     28           PLUS     ---- <operator_lowPrecedence>    YES                ---------
-      ---------      0 --------------     ----          <moreTerms_one>     NO <operator_lowPrecedence>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-             20     28            NUM       20                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----          <moreTerms_one>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-          EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
-      ---------      0 --------------     ----          <moreTerms_one>     NO          <moreTerms_one>
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;     28      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-              a     33             ID     ---- <leftHandSide_singleVar>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
-      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =     33       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-             w1     33             ID     ----                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-          EMPTY     -1        EPSILON     ----          <matrixElement>    YES                ---------
-      ---------      0 --------------     ----                    <var>     NO          <matrixElement>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-      ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-              +     33           PLUS     ---- <operator_lowPrecedence>    YES                ---------
-      ---------      0 --------------     ----          <moreTerms_one>     NO <operator_lowPrecedence>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-         200.23     33           RNUM200.230000                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----          <moreTerms_one>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-          EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
-      ---------      0 --------------     ----          <moreTerms_one>     NO          <moreTerms_one>
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;     33      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-         string     37         STRING     ----                   <type>    YES                ---------
-      ---------      0 --------------     ----        <declarationStmt>     NO                   <type>
-      ---------      0 --------------     ----                   <stmt>     NO        <declarationStmt>
-              s     37             ID     ----               <var_list>    YES                ---------
-      ---------      0 --------------     ----        <declarationStmt>     NO               <var_list>
-          EMPTY     -1        EPSILON     ----               <more_ids>    YES                ---------
-      ---------      0 --------------     ----               <var_list>     NO               <more_ids>
-              ;     37      SEMICOLON     ----        <declarationStmt>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-              s     38             ID     ---- <leftHandSide_singleVar>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
-      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =     38       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-       "number"     38            STR     ----                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-      ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-          EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
-      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;     38      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-              a     39             ID     ---- <leftHandSide_singleVar>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
-      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =     39       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-              @     39           SIZE     ----         <sizeExpression>    YES                ---------
-      ---------      0 --------------     ----    <rightHandSide_type1>     NO         <sizeExpression>
-              s     39             ID     ----         <sizeExpression>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;     39      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
+              (      7             OP     ----                 <ioStmt>    YES                ---------
+              a      7             ID     ----                 <ioStmt>    YES                ---------
+              )      7             CL     ----                 <ioStmt>    YES                ---------
+              ;      7      SEMICOLON     ----                 <ioStmt>    YES                ---------
       ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
       ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
       ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
           EMPTY     -1        EPSILON     ----  <moreStmtOrFunctionDef>    YES                ---------
       ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-            end     46            END     ----           <mainFunction>    YES                ---------
+            end      8            END     ----           <mainFunction>    YES                ---------

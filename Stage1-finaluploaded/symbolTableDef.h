@@ -28,7 +28,7 @@ typedef struct variable{
 	int scopeDepth;
 	int value;
 	int width; //size of id
-	bool isArray;
+	//bool isMat;
 	int col;
 	int row;
 	bool assigned;

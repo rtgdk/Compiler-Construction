@@ -196,6 +196,9 @@ int getType(parsetree pt) // returns int with int,real,str and matrix, pt has no
 
 int getWidth(int type){
 	if (type==1) return 2;
+	else if(type==2) return 4;
+	else if(type==3) return 1;
+	else if(type==4) return 1;
 	else return 2;
 }
 
@@ -208,6 +211,9 @@ void addVariableID(parsetree node, int type, SymbolTablePtr b)
 		v.linedec = node->tk.lineno;
 		v.assigned = false;
 		v.type = type;
+		// if(type==4){
+		// 	v.isMat = 1;
+		// }
 		v.scopeDepth = currentScope;
 		v.offset = 0;
 		v.width = getWidth(type);
@@ -336,6 +342,225 @@ void addOutputList(parsetree node,function *f)
 		addOutputList(node->child[i],f);
 }
 
+variablenodeptr matVar,strVar;
+SymbolTablePtr matTable,strTable;
+
+bool existAndMat(char* name,int lineno){
+	if(matTable == NULL )
+	{
+		return false; //NOT Defined
+	}
+	//printf("In exist!!\n");
+	// printf("Called for existMat %s--%s\n",name,matTable->f.name);
+	//printf("get typeIDDDD  %s-%d-%s\n ",name,lineno,b->f.name);
+	int pos = hash4(name)%VariableTableSize;
+	//printf("pos %d\n",pos);
+	//printf("in exist and outside\n");
+	if(matTable->VariableTable[pos] == NULL)
+	{
+		//printf("In null\n");
+		matTable = matTable->parent;
+		return existAndMat(name ,lineno);
+	}
+	else
+	{
+		//printf("get typeIDDDD\n");
+		variablenodeptr temp = matTable->VariableTable[pos];
+
+		while(temp != NULL)
+		{
+			//printf("%s-%d--%s-%d\n",temp->v.name,temp->v.linedec, name,lineno);
+			//printf("kuch bi\n");
+			//printf("%s\n");
+			if(temp->v.type == 4 && strcmp(temp->v.name , name) == 0 ) //anthing else??
+			{
+				if(temp->v.linedec <= lineno){
+					//printf("Here-returning\n");
+					matVar = temp;
+					// printf("in exist and true\n");
+					return true;
+				}
+				else{
+					return false;
+					//return 7;
+				}
+					
+			}
+			temp = temp->next;
+		}
+		matTable = matTable->parent;
+		return existAndMat(name , lineno);
+	}
+}
+
+bool existAndStr(char* name,int lineno){
+	if(strTable == NULL )
+	{
+		return false; //NOT Defined
+	}
+	//printf("In exist!!\n");
+	// printf("Called for existstr %s--%s\n",name,strTable->f.name);
+	//printf("get typeIDDDD  %s-%d-%s\n ",name,lineno,b->f.name);
+	int pos = hash4(name)%VariableTableSize;
+	//printf("pos %d\n",pos);
+	//printf("in exist and outside\n");
+	if(strTable->VariableTable[pos] == NULL)
+	{
+		//printf("In null\n");
+		strTable = strTable->parent;
+		return existAndStr(name ,lineno);
+	}
+	else
+	{
+		//printf("get typeIDDDD\n");
+		variablenodeptr temp = strTable->VariableTable[pos];
+
+		while(temp != NULL)
+		{
+			//printf("%s-%d--%s-%d\n",temp->v.name,temp->v.linedec, name,lineno);
+			//printf("kuch bi\n");
+			//printf("%s\n");
+			if(temp->v.type == 3 && strcmp(temp->v.name , name) == 0 ) //anthing else??
+			{
+				if(temp->v.linedec <= lineno){
+					//printf("Here-returning\n");
+					strVar = temp;
+					// printf("in exist and true\n");
+					return true;
+				}
+				else{
+					return false;
+					//return 7;
+				}
+					
+			}
+			temp = temp->next;
+		}
+		strTable = strTable->parent;
+		return existAndStr(name , lineno);
+	}
+}
+
+void calculateCol(parsetree rhs,int* count2){
+	// printf("%d\n",*count2);
+	if(strcmp(rhs->child[0]->ruleNode->name,"EPSILON")==0){
+		return;
+	}
+	else{
+		*count2 = *count2+ 1;
+		// printf("Once more %d\n",*count2);
+		return calculateCol(rhs->child[2],count2);
+	}
+}
+
+bool calculateRow(parsetree rhs,int* count1,int* count2){
+	// printf("--%s-%d--%d\n",rhs->ruleNode->name,*count1,*count2);
+	if(strcmp(rhs->child[0]->ruleNode->name,"EPSILON")==0){
+		return true;
+	}
+	else{
+		*count1 = *count1 + 1;
+		int count3 = 1;
+		calculateCol(rhs->child[1]->child[1],&count3);
+		// printf("count-%d\n",count3);
+		if (count3!=(*count2)) {
+			return false;
+		}
+		return calculateRow(rhs->child[2],count1,count2);
+	}
+}
+
+void updateMatSize(parsetree rhs) // rhs is RHS TYPE1
+{
+	// printf("Here1 %s\n", rhs->ruleNode->name);
+	if(strcmp(rhs->child[0]->ruleNode->name,"<arithmeticExpression>")!=0){
+		return;
+	}
+	else{
+		// printf("Here2 %s\n",rhs->child[0]->child[0]->child[0]->child[0]->ruleNode->name);
+		if(strcmp(rhs->child[0]->child[0]->child[0]->child[0]->ruleNode->name,"<var>")!=0){ //TYPE1->AE->AT->AF->var
+			return;
+		}
+		else{
+			//printf("Here3\n");
+			if(strcmp(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->ruleNode->name,"<matrix>")!=0){ //TYPE1->AE->AT->AF->var->matrix
+				return;
+			}
+			else{
+				//printf("Here4 %s\n",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[1]->ruleNode->name);
+				int nor = 1;
+				int noc = 1;
+				calculateCol(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[1],&noc); //matrix->rows->row->remainingcol
+				//printf("Here5 %d\n",noc);
+				if (noc>10){
+					printf("Line No. %d: Matrix %s can have maximum 10 columns",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+					return;
+				}
+				bool cr = calculateRow(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[1],&nor,&noc); //matrix->rows->moreRows
+				printf("Here6 %d --%d\n",nor,noc);
+				if(!cr) {
+					printf("Line No. %d: Mismatch no of columns while assigning matrix %s",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+					return;
+				}
+				if (nor>10){
+					printf("Line No. %d: Matrix %s can have maximum 10 rows",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+					return;
+				}
+				//printf("here7 %s \n",matVar->v.name);
+				matVar->v.col = noc;
+				matVar->v.row = nor;
+				matVar->v.width = noc*nor;
+				return;
+			}
+		}
+	}
+}
+
+void updateStrSize(parsetree rhs) // rhs is RHS TYPE1
+{
+//	printf("Here1 %s\n", rhs->ruleNode->name);
+	if(strcmp(rhs->child[0]->ruleNode->name,"<arithmeticExpression>")!=0){
+		return;
+	}
+	else{
+	//	printf("Here2 %s\n",rhs->child[0]->child[0]->child[0]->child[0]->ruleNode->name);
+		if(strcmp(rhs->child[0]->child[0]->child[0]->child[0]->ruleNode->name,"<var>")!=0){ //TYPE1->AE->AT->AF->var
+			return;
+		}
+		else{
+		//	printf("Here3\n");
+			if(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->tk.type!=STR){ //TYPE1->AE->AT->AF->var->STR
+				return;
+			}
+			else{
+			//	printf("Here4 %s\n",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->tk.lexeme);
+				// int nor = 1;
+				// int noc = 1;
+				// calculateCol(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[1],&noc); //matrix->rows->row->remainingcol
+				// printf("Here5 %d\n",noc);
+				// if (noc>10){
+				// 	printf("Line No. %d: Matrix %s can have maximum 10 columns",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+				// 	return;
+				// }
+				// bool cr = calculateRow(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[1],&nor,&noc); //matrix->rows->moreRows
+				// printf("Here6 %d --%d\n",nor,noc);
+				// if(!cr) {
+				// 	printf("Line No. %d: Mismatch no of columns while assigning matrix %s",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+				// 	return;
+				// }
+				// if (nor>10){
+				// 	printf("Line No. %d: Matrix %s can have maximum 10 rows",rhs->child[0]->child[0]->child[0]->child[0]->child[0]->child[1]->child[0]->child[0]->tk.lineno,matVar->v.name);
+				// 	return;
+				// }
+				// printf("here7 %s \n",matVar->v.name);
+				// matVar->v.col = noc;
+				// matVar->v.row = nor;
+				strVar->v.width = strlen(rhs->child[0]->child[0]->child[0]->child[0]->child[0]->tk.lexeme)-2; // coz "" also included in str
+				return;
+			}
+		}
+	}
+}
 
 void makeST(parsetree root)
 {
@@ -348,6 +573,20 @@ void makeST(parsetree root)
 		{
 			int vtype = getType(root->parent->child[0]);
 			addVariableID(root, vtype , currentTable);
+		}
+	}
+	else if(root->ruleNode->type==1 && strcmp(root->ruleNode->name,"<leftHandSide_singleVar>")==0)
+	{	
+		matTable = currentTable;;
+		strTable = currentTable;
+		//printf("in here\n");
+		if (existAndMat(root->child[0]->tk.lexeme,root->child[0]->tk.lineno)){ //ID
+			//printf("in if here\n");
+			updateMatSize(root->parent->child[2]); //RHSType1
+		}
+		else if(existAndStr(root->child[0]->tk.lexeme,root->child[0]->tk.lineno)){
+			//printf("in str if here\n");
+			updateStrSize(root->parent->child[2]); //RHSType1
 		}
 	}
 	else if(root->ruleNode->type==1 && strcmp(root->ruleNode->name,"<parameter_list>")==0)
@@ -486,8 +725,9 @@ void print_symboltable(SymbolTablePtr br)
 				else if(temp->v.type == 2)
 					width = 4;
 				else if(temp->v.type == 3)
-					width = 20;
-
+					width = temp->v.width;
+				else if(temp->v.type == 4)
+					width = temp->v.width*2 ; /// coz in has size 2
 				printf("%12s      %8d" , btemp->f.name, temp->v.scopeDepth+1);
 				if(btemp->parent!=NULL){
 					printf("%13s",btemp->parent->f.name);

@@ -31,7 +31,7 @@ int getTypeID(char* name , SymbolTablePtr b, int lineno)
 	{
 		//printf("Returning\n");
 		if (flag ==1){
-			printf("Line No.%d : Variable %s not declared yet. Declartion found later in line %d. Variable cannot be used before declaration.\n",lineno,name,laterline);
+			printf("Line No.%d : Variable %s not declared yet. Declaration found later in line %d. Variable cannot be used before declaration.\n",lineno,name,laterline);
 			flag =0;
 		}
 		else{
@@ -65,7 +65,10 @@ int getTypeID(char* name , SymbolTablePtr b, int lineno)
 					return (temp->v.type);
 				}
 				else{
-					flag = 1;
+					if(flag!=1){
+						flag = 1;
+						laterline = temp->v.linedec;
+					}
 					//return 7;
 				}
 					
@@ -466,18 +469,18 @@ bool checkOperatorType(AStree op, AStree ex1, AStree ex2){
 	return false;
 }
 
-void getASTtype(AStree ast) // type checking in expression
+void checkRightSideType1(AStree ast) // type checking in expression
 {
 	// if(ast->ruleNode->type==0)
 	//  	printf("%s %d\n",ast->tk.lexeme,ast->tk.lineno);
 	// else
 	//  	printf("%s\n",str_characters[(int)ast->ruleNode->name.c]);
-	//printf("getASTtype----%s\n",ast->ruleNode->name);
+	//printf("checkRightSideType1----%s\n",ast->ruleNode->name);
 	char * char_type[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};	
 	if(strcmp(ast->ruleNode->name,"<rightHandSide_type1>")==0)
 	{
 		//printf("got type4 %s\n",ast->tk.lexeme);
-		getASTtype(ast->child[0]);
+		checkRightSideType1(ast->child[0]);
 		//printf("got type4 %s\n",ast->tk.lexeme);
 		// if(ast->child[0]->type == 7){
 		// 	ast->type = 5;
@@ -488,7 +491,7 @@ void getASTtype(AStree ast) // type checking in expression
 	}
 	else if(strcmp(ast->ruleNode->name,"<arithmeticExpression>")==0)
 	{
-		getASTtype(ast->child[0]);
+		checkRightSideType1(ast->child[0]);
 		if(ast->child[0]->type == 5){
 			ast->type = 5;
 			return;
@@ -498,7 +501,7 @@ void getASTtype(AStree ast) // type checking in expression
 			return;
 		}
 		//printf("Here in AE1/2\n");
-		getASTtype(ast->child[1]);
+		checkRightSideType1(ast->child[1]);
 		if(ast->child[1]->type == 5){
 			ast->type = 5;
 			return;
@@ -521,7 +524,7 @@ void getASTtype(AStree ast) // type checking in expression
 	}
 	else if(strcmp(ast->ruleNode->name,"<arithmeticTerm>")==0)
 	{
-		getASTtype(ast->child[0]);
+		checkRightSideType1(ast->child[0]);
 		if(ast->child[0]->type == 5){
 			ast->type = 5;
 			return;
@@ -534,7 +537,7 @@ void getASTtype(AStree ast) // type checking in expression
 			return;
 		}
 		//printf("Here in AT1/2\n");
-		getASTtype(ast->child[1]);
+		checkRightSideType1(ast->child[1]);
 		if(ast->child[1]->type == 5){
 			ast->type = 5;
 			return;
@@ -557,7 +560,7 @@ void getASTtype(AStree ast) // type checking in expression
 	}
 	else if(strcmp(ast->ruleNode->name,"<arithmeticFactor>")==0)
 	{
-		getASTtype(ast->child[0]);
+		checkRightSideType1(ast->child[0]);
 
 		if(ast->child[0]->type==5){
 			ast->type = 5;
@@ -571,7 +574,7 @@ void getASTtype(AStree ast) // type checking in expression
 	}
 	else if(strcmp(ast->ruleNode->name,"<moreTerms_two>")==0)
 	{
-		getASTtype(ast->child[1]);
+		checkRightSideType1(ast->child[1]);
 		if(ast->child[1]->type==5){
 			ast->type = 5;
 			return;
@@ -581,7 +584,7 @@ void getASTtype(AStree ast) // type checking in expression
 			return;
 		}
 		else{
-			getASTtype(ast->child[2]);
+			checkRightSideType1(ast->child[2]);
 			if(ast->child[2]->type==5){
 				ast->type = 5;
 				return;
@@ -598,7 +601,7 @@ void getASTtype(AStree ast) // type checking in expression
 	}
 	
 	else if(strcmp(ast->ruleNode->name,"<moreTerms_one>")==0){
-		getASTtype(ast->child[1]);
+		checkRightSideType1(ast->child[1]);
 		if(ast->child[1]->type==5){
 			ast->type = 5;
 			return;
@@ -608,7 +611,7 @@ void getASTtype(AStree ast) // type checking in expression
 			return;
 		}
 		else{
-			getASTtype(ast->child[2]);
+			checkRightSideType1(ast->child[2]);
 			if(ast->child[2]->type==5){
 				ast->type = 5;
 				return;
@@ -628,7 +631,7 @@ void getASTtype(AStree ast) // type checking in expression
 	else if(strcmp(ast->ruleNode->name,"<sizeExpression>")==0)
 	{
 		// printf("%d\n",ast->child[0]->type);
-		// getASTtype(ast->child[0]); // if not considering SIZE as node
+		// checkRightSideType1(ast->child[0]); // if not considering SIZE as node
 		int vt = getTypeID(ast->child[0]->tk.lexeme,ast->child[0]->st,ast->child[0]->tk.lineno);
 		if (vt==3 || vt==4){
 			ast->type = 1;
@@ -804,6 +807,7 @@ bool checkIOStmt(AStree ast){
 
 bool checkRelationalOp(AStree ast){
 	char* char_type[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};
+	//printf("here1\n");
 	tp c1 = ast->parent->child[0]->child[0]->tk.type;
 	tp c2 = ast->parent->child[2]->child[0]->tk.type;
 	if(c1==ID){
@@ -826,13 +830,14 @@ bool checkRelationalOp(AStree ast){
 		else {
 			ast->parent->child[0]->type =  vt;
 		}
+		//printf("out of if1\n");
 
 	}
 	else if(c1 == NUM){
-		ast->parent->child[0] = 1; //INT
+		ast->parent->child[0]->type = 1; //INT
 	}
 	else if(c1 == RNUM){
-		ast->parent->child[0] = 2; //REAL
+		ast->parent->child[0]->type = 2; //REAL
 	}
 
 	if(c2==ID){
@@ -856,18 +861,22 @@ bool checkRelationalOp(AStree ast){
 			ast->parent->child[0]->type =  vt;
 		}
 
+
 	}
 	else if(c2 == NUM){
-		ast->parent->child[2] = 1; //INT
+		ast->parent->child[2]->type = 1; //INT
+		//printf("out of elseif2\n");
 	}
 	else if(c2 == RNUM){
-		ast->parent->child[2] = 2; //REAL
+		ast->parent->child[2]->type = 2; //REAL
 	}
 	if(ast->parent->child[0]->type!= ast->parent->child[2]->type){
+		//printf("error\n");
 		printf( "Line No.%d : Type Mismatch for for '%s' operation. Got %s(%s) on left and %s(%s) on right.\n" , ast->child[0]->tk.lineno,ast->child[0]->tk.lexeme ,char_type[ast->parent->child[0]->type-1],ast->parent->child[0]->child[0]->tk.lexeme,char_type[ast->parent->child[2]->type-1],ast->parent->child[2]->child[0]->tk.lexeme);
 		ast->type = 5;
 		return false;
 	}
+	//printf("returning true\n");
 	return true;
 
 }
@@ -908,7 +917,7 @@ void semanticAnalysis(AStree root)
 			if(strcmp(root->parent->parent->child[1]->ruleNode->name,"<rightHandSide_type1>")==0)
 			{
 				//printf("got type2 %s\n",root->tk.lexeme);
-				getASTtype(root->parent->parent->child[1]);
+				checkRightSideType1(root->parent->parent->child[1]);
 				//printf("got type2\n");
 				//printf("got type2 %s\n",root->tk.lexeme);
 				int t = root->parent->parent->child[1]->type;
@@ -931,7 +940,7 @@ void semanticAnalysis(AStree root)
 			//Code for matrix assignment
 			// else
 			// {	
-			// 	getASTtype(root->parent->child[1]->child[0]->child[1]);
+			// 	checkRightSideType1(root->parent->child[1]->child[0]->child[1]);
 			// 	typ t = root->parent->child[1]->child[0]->child[1]->type;
 			// 	if(t == 5)
 			// 	{
@@ -1002,7 +1011,7 @@ void semanticAnalysis(AStree root)
 	// 	}
 	// 	else
 	// 	{
-	// 		getASTtype(root->parent->child[1]);
+	// 		checkRightSideType1(root->parent->child[1]);
 	// 		if(root->parent->child[1]->type != BOOL)
 	// 		{
 	// 			printf( "Line No.%d : Conditional expression of while loop in line %d must be of boolean type\n",root->parent->child[0]->tk.lineno );
