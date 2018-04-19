@@ -1,8 +1,11 @@
-mycompiler: driver.o lexer.o parser.o ast.o symbolTable.o semantics.o
-	gcc -o stage1exe driver.o lexer.o parser.o ast.o symbolTable.o semantics.o
+mycompiler: driver.o lexer.o parser.o ast.o symbolTable.o semantics.o codegen.o
+	gcc -o stage1exe driver.o lexer.o parser.o ast.o symbolTable.o semantics.o codegen.o
 	 	
 driver.o: driver.c
 	gcc -c -w driver.c
+
+codegen.o: codegen.c
+	gcc -c -w codegen.c
 
 semantics.o: semantics.c
 	gcc -c -w semantics.c

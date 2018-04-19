@@ -40,29 +40,20 @@ Initialise Symbol Table
 void initSymbolTable(){
 	globalTable = (SymbolTableNode*)malloc(sizeof(SymbolTableNode));
 	globalTable->type = 5; //main;
-	globalTable->noc = 0;
+	globalTable->start = 0;
 	globalTable->parent = NULL;
+	globalTable->counter = 0;
+	globalTable->end = 0;
+	globalTable->noc = 0;
 	globalTable->child = NULL;
-	// function f;
-	// strcmp(f.name,"ROOT");
-	strcpy(globalTable->f.name,"ROOT");
-	//globalTable->count = 0;
 	int i;
 	for(i = 0 ; i < VariableTableSize ; i++)
 		globalTable->VariableTable[i] = NULL;
+	strcpy(globalTable->f.name,"ROOT");
 	currentTable = globalTable;
 	currentScope = 0;
 }
 
-// int get_int(char *arr) /*str to int*/
-// {
-//   int num = 0;
-//   for(int i=0 ; arr[i]!='\0' ; i++)
-//   {
-//     num = num*10 + ((int)arr[i]-'0');
-//   }
-//   return num;
-// }
 
 /*
  Add Variable to the symboltable pointed by st

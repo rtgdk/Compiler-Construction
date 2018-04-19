@@ -9,8 +9,8 @@ Rohit Lodha
 
 bool checkOperatorType(AStree op, AStree ex1, AStree ex2);
 int getTypeID(char* name , SymbolTablePtr b, int lineno);
-void inputType(astptr root , function *f);
-bool outputType(astptr root , function *f);
-void semanticAnalysis(astptr root);
+void inputType(AStree root , function *f);
+bool outputType(AStree root , function *f);
+void semanticAnalysis(AStree root);
 
 #endif

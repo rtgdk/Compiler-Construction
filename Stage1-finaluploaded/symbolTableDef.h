@@ -59,7 +59,7 @@ typedef struct functionnode{
 typedef struct functionnode* functionnodeptr;
 
 typedef struct SymbolTableNode{
-	int type;  //1 for main, 2 for function, 3 for if , 4 for else
+	int type;  //1 for main, 2 for function, 3 for if , 4 for else, 5 for root
 	function f;
 	variablenodeptr VariableTable[VariableTableSize];
 	int noc;

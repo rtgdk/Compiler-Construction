@@ -43,6 +43,7 @@ char* allowedterminals[NO_OF_ALLOWED_TERMINALS] = {"AND",
 "STRING"
 };
 
+noast = 0;
 /*
 For hashing Allowed Terminals to bucket no in HashTable
 */
@@ -363,6 +364,7 @@ AStree makeAST(parsetree PT){
     return ast;
 }
 
+int nodesAST =0 ;
 void printAST(AStree ast) // Prefix
 {
 	if (ast==NULL) return;
@@ -410,14 +412,14 @@ void printASTree(AStree PT, FILE* fp)
 	if(PT->child[0]!=NULL){
 		printASTree(PT->child[0],fp);
 		AStree temp = PT->child[0]->next;
-		printToFile2(PT,fp);
+		printToConsole2(PT,fp);
 		while(temp!=NULL){
 			printASTree(temp,fp);
 			temp= temp->next;
 		}
 	}
 	else{
-		printToFile2(PT,fp);
+		printToConsole2(PT,fp);
 	}
 	
 	return;
@@ -427,9 +429,10 @@ void printASTree(AStree PT, FILE* fp)
 /*
 print a tree at a time in file 
 */
-void printToFile2(AStree tr,FILE *fp)
+void printToConsole2(AStree tr,FILE *fp)
 {
 	//printf("Tree %s\n",tr->tk.name);
+	noast++;
     if((tr->ruleNode)->type==0)
         {
             //printf("%15s",tr->tk.lexeme);
@@ -500,4 +503,21 @@ void printToFile2(AStree tr,FILE *fp)
     //printf("\n");
     printf(" 10%s" ,tr->st->f.name);
     printf("\n");
+}
+
+
+void comprr()
+{
+    int mempt = nopt * sizeof(struct treenode);
+
+    printf("Parse tree : Number of nodes = %d Allocated Memory = %d Bytes\n" , nopt , mempt);
+
+    int memast = noast * (sizeof(struct astnode) - sizeof(SymbolTablePtr) - sizeof(int));
+
+    printf("Abstract syntax tree : Number of nodes = %d Allocated Memory = %d Bytes\n" , noast , memast);
+
+    double compr = ((double)(mempt - memast)) / mempt;
+    compr = compr * 100;
+
+    printf("Compression percentage = %lf %%\n" , compr);
 }

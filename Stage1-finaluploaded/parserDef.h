@@ -71,5 +71,5 @@ typedef struct treenode{
 } treenode;
 
 typedef treenode* parsetree;
-
+int nopt;
 #endif

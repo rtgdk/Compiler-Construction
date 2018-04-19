@@ -34,5 +34,5 @@ typedef struct astnode{
 } astnode;
 
 typedef astnode* AStree;
-
+int noast;
 #endif

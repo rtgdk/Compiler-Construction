@@ -38,7 +38,7 @@ extern bool isStackEmpty(Stack* st);
 extern void initialiseSynchMatrix();
 extern void expectedToken(char* name,char* expected);
 extern parsetree parseInputSourceCode(char *testcaseFile, GrammarNode** parsetable);
-extern void printParseTree(parsetree PT, FILE* fp);
+extern void printParseTree(parsetree PT);//, FILE* fp);
 extern void fileprint(parsetree tr,FILE *fp);
 
 #endif

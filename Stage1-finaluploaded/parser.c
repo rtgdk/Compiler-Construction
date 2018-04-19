@@ -13,6 +13,7 @@ Rohit Lodha
 #define GRN   "\x1B[32m"
 #define RESET "\x1B[0m"
 //char buffer[BUFFER_SIZE];
+nopt = 0;
 /*
 For hashing Non Terminals to bucket no in HashTable
 */
@@ -989,23 +990,102 @@ parsetree parseInputSourceCode(char *testcaseFile, GrammarNode** parsetable){
 /*
 Print parse tree inorder traversal
 */
-void printParseTree(parsetree PT, FILE* fp)
+void printParseTree(parsetree PT)// , FILE* fp)
 {
 	if (PT==NULL) return;
 	if(PT->child[0]!=NULL){
-		printParseTree(PT->child[0],fp);
+		printParseTree(PT->child[0]);//,fp);
 		parsetree temp = PT->child[0]->next;
-		printToFile(PT,fp);
+		printToConsole(PT);//,fp);
 		while(temp!=NULL){
-			printParseTree(temp,fp);
+			printParseTree(temp); //,fp);
 			temp= temp->next;
 		}
 	}
 	else{
-		printToFile(PT,fp);
+		printToConsole(PT); //,fp);
 	}
 	
 	return;
+}
+
+
+/*
+print a tree at a time co console 
+*/
+void printToConsole(parsetree tr)//,FILE *fp)
+{
+	//printf("Tree %s\n",tr->tk.name);
+	nopt++;
+    if((tr->ruleNode)->type==0)
+        {
+            //printf("%15s",tr->tk.lexeme);
+            //printf("%7d",tr->tk.lineno);
+            //printf("%15s",tr->tk.name);
+            printf("%15s",tr->tk.lexeme);
+            printf("%7d",tr->tk.lineno);
+            printf("%15s",tr->tk.name);
+        }
+	else
+        {
+            //printf("      ---------");
+            //printf("%7d",0);
+            //printf("%s"," --------------");
+            printf("      ---------");
+            printf("%7d",0);
+            printf("%s"," --------------");
+        }
+    if((tr->ruleNode)->type==0)
+    {
+        if(strcmp(tr->tk.name,"NUM")==0){
+        	//printf("%9d",atoi(tr->tk.lexeme));
+        	printf("%9d",atoi(tr->tk.lexeme));
+		}
+        else if(strcmp(tr->tk.name,"RNUM")==0){
+        	//printf("%9f",atof(tr->tk.lexeme));
+        	printf("%9f",atof(tr->tk.lexeme));
+		}
+        else {
+        	//printf("%9s","----");
+        	printf("%9s","----");
+		}
+    }
+	else {
+		//printf("%9s","----");
+		printf("%9s","----");
+		
+	}
+    if(tr->parent!=NULL){
+    	//printf("%25s",tr->parent->ruleNode->name);
+    	printf("%25s",tr->parent->ruleNode->name);
+	}
+    else {
+    	//printf("%25s","ROOT");
+    	printf("%25s","ROOT");
+	}
+    if((tr->ruleNode)->type==0){
+    	//printf("%7s","YES");
+    	printf("%7s","YES");
+	}
+    else {
+    	//printf("%7s","NO");
+    	printf("%7s","NO");
+	}
+	
+    if(tr->ruleNode->type==1){
+		//printf("%25s",(tr->ruleNode)->name);
+		printf("%25s",(tr->ruleNode)->name);
+	}
+	else if(tr->ruleNode->type==3){
+    	//printf("%25s","EPSILON");
+    	printf("%25s","EPSILON");
+	}
+    else {
+    	//printf("%25s","---------");
+    	printf("%25s","---------");
+	}
+    //printf("\n");
+    printf("\n");
 }
 
 
