@@ -1,0 +1,32 @@
+extern printf
+ extern scanf
+section .data
+formatin : db "%d",0
+formatout : db "%d",10,0
+section .bss
+la2: resw 1
+lb2: resw 1
+lp31: resw 1
+lsum5: resw 1
+ldiff5: resw 1
+lprod5: resw 1
+lc5: resw 1
+ld5: resw 1
+la12: resw 1
+lb12: resw 1
+lc12: resw 1
+lp13: resw 1
+lq13: resw 1
+lr13: resw 1
+lx12: resw 1
+ls15: resw 1
+lu15: resw 1
+ld20: resw 1
+section .text
+ GLOBAL main
+main:
+mov dx,3
+mov dx,5
+mov ebx,0
+mov eax,1
+int 0x80

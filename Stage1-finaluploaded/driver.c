@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 		    //printf("PT succesfull %s\n",PT->ruleNode->name);
 		    makeST(PT);
             //printf("ST succesfull\n");
-		    printST();
+		    printSTUtility();
 		}
 		else if(n==6){
 			initialiseLexer();
@@ -111,10 +111,10 @@ int main(int argc, char *argv[])
 		//     //printf("PT succesfull %s\n",PT->ruleNode->name);
 		//     makeST(PT);
 		//     ast = makeAST(PT);
-		//     printST();
+		//     printSTUtility();
 		   
   //           //printf("ST succesfull\n");
-		//     // printST();
+		//     // printSTUtility();
 		// }
 		else{
 			printf("%sQuiting\n",RED);

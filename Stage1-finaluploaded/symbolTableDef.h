@@ -12,7 +12,6 @@ Rohit Lodha
 #include <stdbool.h>
 
 #include "parserDef.h"
-//#include "astDef.h"
 #define VariableTableSize 100
 
 // typedef struct array{
@@ -24,11 +23,8 @@ typedef struct variable{
 	char name[40];
 	int type;  //1 int, 2 real, 3 string, 4 matrix , 5 for not defined
 	int linedec; //line no of declaration
-	int offset;
 	int scopeDepth;
-	int value;
 	int width; //size of id
-	//bool isMat;
 	int col;
 	int row;
 	bool assigned;
@@ -47,7 +43,6 @@ typedef struct function{
 	variablenodeptr inputList;
 	int noOfOutput;
 	variablenodeptr outputList;
-	bool defined;
 	int linedec;
 }function;
 
@@ -74,4 +69,9 @@ typedef struct SymbolTableNode* SymbolTablePtr;
 SymbolTablePtr globalTable;
 SymbolTablePtr currentTable;
 int currentScope;
+variablenodeptr matVar,strVar;
+SymbolTablePtr matTable,strTable;
+int sterror;
+int totaloffset;
+char* types[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};
 #endif

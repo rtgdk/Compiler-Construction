@@ -1,0 +1,76 @@
+_main[]
+	int a, g,h,x;
+	real b,z;
+	matrix s;
+	int u,v;	
+	mat1 = [1,2, 3; 4, 5, 6; 6, 7, 8];
+	read(v);
+	read(u);
+	read(s);
+	print(u);
+	print(v);
+	print(s);
+	matrix mat1;
+	mat1 = [1,2, 3; 4, 5, 6; 6, 7, 8];
+	[a,b] = @mat1;
+	string s1;
+	s1 = "rohit";
+	a = @s1;
+	[a,b] = @s1;
+	[a] = @s1;
+	a = @mat1; 
+	function [int sum, int diff]= _calculator[int c]
+		sum = c + b;
+		diff = c - a;
+		prod = c*b;
+		if ((diff>2).and.(sum<50))
+		    diff = 5;
+		else
+		    if((diff<2).or.(sum>45))
+		        diff= 6;
+		    else
+		      if (.not.(diff2=/=5))
+		        diff = 7;
+		      endif;
+		    endif;
+		endif;
+		function [int sum]= _calculator[int c]
+		    sum = c+c*c;
+		end;
+		function [int sum]= _calculator2[int c]
+		    sum = c+c*c;
+		end;
+		function [int sum]= _calculator2[int c]
+		    sum = c+c*c;
+		end;
+		#_main();
+		int ffg;
+		_calculator(5);
+		real f;
+		f = 4/3;
+		string g;
+		g = "done";
+	end;
+	z = ((a -g) *(h+u))+((13-a)*(u+g));
+	g = ((a -g) *(h+u))-((10+a)*(u+g));
+	if(g>2)
+		x = 5;
+	else
+		x = 10;
+	endif;
+	if(g<2)
+		x = 15;
+	else
+		x = 20;
+	endif;
+	int f;
+	f = 0;
+end
+
+#Semantic errors
+#line 6: variable mat1 is not declared
+#line 7: type mismatch errors
+#line 9: type mismatch error
+#line 15: type mismatch error
+#line 18: type mismatch error
+
