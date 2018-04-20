@@ -21,6 +21,10 @@ Rohit Lodha
 saerror = 0;
 char* types1[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};
 
+
+void initialiseSemantics(){
+	saerror = 0;
+}
 /* 
 Returns varaibel node ptr from the symbol table
 */
@@ -562,6 +566,7 @@ Check <rightHandSide_type1> of the grammer
 */
 void checkRightSideType1(AStree ast) // type checking in expression
 {
+	//printf("-----%s\n",ast->ruleNode->name);
 	if(strcmp(ast->ruleNode->name,"<rightHandSide_type1>")==0)
 	{
 		checkRightSideType1(ast->child[0]);
@@ -575,7 +580,8 @@ void checkRightSideType1(AStree ast) // type checking in expression
 			ast->type = 5;
 			return;
 		}
-		if(ast->child[1]==NULL || ast->child[1]->noc==0){
+		//printf("AE\n");
+		if(ast->noc==1){
 			ast->type = ast->child[0]->type;
 			return;
 		}
@@ -601,10 +607,13 @@ void checkRightSideType1(AStree ast) // type checking in expression
 			ast->type = 5;
 			return;
 		}
-		if(ast->child[1]==NULL || ast->child[1]->noc==0){
+		//printf("AT %d\n",ast->noc);
+		if(ast->noc==1){
+			//printf("AT2\n");
 			ast->type = ast->child[0]->type;
 			return;
 		}
+		//printf("AT3\n");
 		checkRightSideType1(ast->child[1]);
 		if(ast->child[1]->type == 5){
 			ast->type = 5;
@@ -629,7 +638,7 @@ void checkRightSideType1(AStree ast) // type checking in expression
 	else if(strcmp(ast->ruleNode->name,"<arithmeticFactor>")==0)
 	{
 		checkRightSideType1(ast->child[0]);
-
+		//printf("AF\n");
 		if(ast->child[0]->type==5){
 			ast->type = 5;
 		}
@@ -645,7 +654,7 @@ void checkRightSideType1(AStree ast) // type checking in expression
 			ast->type = 5;
 			return;
 		}
-		if(ast->child[2]==NULL || ast->child[2]->noc==0){ // epsilon
+		if(ast->noc==2){ // epsilon
 			ast->type = ast->child[1]->type;
 			return;
 		}
@@ -655,7 +664,7 @@ void checkRightSideType1(AStree ast) // type checking in expression
 				ast->type = 5;
 				return;
 			}
-			printf("In here %s\n",ast->child[2]->child[0]->child[0]->ruleNode->name);
+			//printf("In here %s\n",ast->child[2]->child[0]->child[0]->ruleNode->name);
 			if(checkOperatorType(ast->child[2]->child[0],ast->child[1],ast->child[2]->child[1])){
 
 				if(ast->child[2]->child[0]->child[0]->tk.type==DIV && ast->child[1]->type==1){
@@ -679,7 +688,7 @@ void checkRightSideType1(AStree ast) // type checking in expression
 			ast->type = 5;
 			return;
 		}
-		if(ast->child[2]==NULL || ast->child[2]->noc==0){ // epsilon
+		if(ast->noc==2){ // epsilon
 			ast->type = ast->child[1]->type;
 			return;
 		}
@@ -770,6 +779,7 @@ void checkRightSideType1(AStree ast) // type checking in expression
 		}
 		else if(ast->child[0]->tk.type == STR)
 		{
+			//printf("IN STR\n");
 			ast->type = 3;
 		}
 		else if(strcmp(ast->child[0]->ruleNode->name,"<matrix>")==0)
@@ -889,7 +899,9 @@ void semanticAnalysis(AStree ast)
 			markAssigned(temp , ast->st);
 			if(strcmp(ast->parent->parent->child[1]->ruleNode->name,"<rightHandSide_type1>")==0)
 			{
+				//printf("Here\n");
 				checkRightSideType1(ast->parent->parent->child[1]);
+				//printf("Here\n");
 				int t = ast->parent->parent->child[1]->type;
 				if (vt==5){
 					return ;

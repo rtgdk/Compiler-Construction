@@ -43,7 +43,10 @@ char* allowedterminals[NO_OF_ALLOWED_TERMINALS] = {"AND",
 "STRING"
 };
 
-noast = 0;
+void initialiseAST(){
+	noast =0;
+}
+
 /*
 For hashing Allowed Terminals to bucket no in HashTable
 */
@@ -182,40 +185,18 @@ AStree addChildren2(AStree tree, parsetree pt){
 	return tree;
 }
 
-// /*
-// Returns next of the tree
-// */
-// AStree next2(AStree tree){
-// 	if(tree->next!=NULL){
-// 		return tree->next;
-// 	}
-// 	else{
-// 		if(tree->parent==NULL) return tree; //main function
-// 		else{
-// 			while(tree->parent!=NULL){
-// 				tree = tree->parent;
-// 				if(tree->next!=NULL) return tree->next;
-// 			}
-// 			return tree;
-// 		}
-// 	}
-// }
-
 /*
 Convert Parse to AST, called only for non terminals (cannot be null)
 */
-AStree parseToAST(parsetree PT){
-	//if (PT==NULL) return NULL;
+AStree parseToAST(parsetree PT,int abs){
 	AStree ast =  createASTree(PT);
-	//printf("First child is %s\n", PT->child[0]->ruleNode->name);
 	AStree astChild;
 	int flag = 0;
 	int i;
 	if(PT->child[0]!=NULL){
 		for(i =0;i<PT->noc;i++){
 			if(PT->child[i]->ruleNode->name[0]=='<'){
-			    //printf("Going for child %s\n",PT->child[i]->ruleNode->name); 
-				astChild = parseToAST(PT->child[i]);
+				astChild = parseToAST(PT->child[i],abs);
 				if(astChild!=NULL){ // to avoid more_ids->epsilon situation
 					flag = 1;
 					ast->child = (struct astnode**)realloc(ast->child,(ast->noc+1)*sizeof(struct astnode*));
@@ -229,19 +210,22 @@ AStree parseToAST(parsetree PT){
 			}
 			else {
 				if (PT->child[i]->tk.type==MAIN || PT->child[i]->tk.type==IF || PT->child[i]->tk.type==FUNCTION){
-					//printf("Here\n");
-					currentTable->counter++;
-					currentTable = currentTable->child[currentTable->counter-1];
+					if(abs!=0){
+						currentTable->counter++;
+						currentTable = currentTable->child[currentTable->counter-1];
+					}
 				}
 				else if (PT->child[i]->tk.type==ELSE){
-					//printf("Here2\n");
-					currentTable = currentTable->parent;
-					currentTable->counter++;
-					currentTable = currentTable->child[currentTable->counter-1];
+					if(abs!=0){
+						currentTable = currentTable->parent;
+						currentTable->counter++;
+						currentTable = currentTable->child[currentTable->counter-1];
+					}
 				}
 				else if (PT->child[i]->tk.type==ENDIF || PT->child[i]->tk.type==END){
-					//printf("Here3\n");
-					currentTable = currentTable->parent;
+					if(abs!=0){
+						currentTable = currentTable->parent;
+					}
 				}
 				if (present2(PT->child[i]->ruleNode->name)){
 					flag = 1;
@@ -252,7 +236,6 @@ AStree parseToAST(parsetree PT){
 		}
 	}
 	if(flag==0) {
-	    //printf("Returnign Null from parsetoast for %s",ast->ruleNode->name);
 	    return NULL; // to avoid more_ids->epsilon situation
     }
 	else return ast;
@@ -282,44 +265,9 @@ void pruneAST(AStree ast,int childNo){
 	return;
 }
 
+
 /*
- To pull up the operator 
-*/
-// void operatorAST(AStree ast,int childNo){
-// 	AStree tree = ast;
-// 	AStree tree2;
-// 	int i=0;
-// 	//tokenizeTree2(tree->parent, tree->tk);
-// 	for(i=0;i<ast->parent->parent->noc;i++){
-// 		if(strcmp(ast->parent->parent->child[i]->ruleNode->name,ast->parent->ruleNode->name)==0){
-// 			break;
-// 		}
-// 	}
-// 	ast->parent->parent->child[i] = ast;
-// 	tree = ast->parent->parent;
-// 	ast->next = ast->parent->next;
-// 	ast->noc = ast->parent->noc - 1;
-// 	for(i=0;i < ast->noc;i++){
-// 		ast->child[i] = ast->parent->child[i+1];
-// 	}
-// 	ast->parent = tree;
-// 	tree2 = ast->parent;
-// 	//ast = tree->parent;
-// 	return ast;
-// 	free(tree2);
-// }
-
-// int isOperator(AStree ast){
-//     if(strcmp(ast->ruleNode->name,"PLUS")==0 || strcmp(ast->ruleNode->name,"MINUS")==0 || strcmp(ast->ruleNode->name,"MUL")==0 || strcmp(ast->ruleNode->name,"DIV")==0){
-//         return 1;
-//     }
-//     else{
-//         return 0;
-//     }
-// }
-
-
-/* To modify the AST
+ To modify the AST
 */
 AStree modifyAST(AStree ast){
 	if (ast==NULL) return NULL;
@@ -329,25 +277,13 @@ AStree modifyAST(AStree ast){
 			pruneAST(ast->child[0],0);
 		}
 		AStree tree = ast->child[0]->next;
-		
-		// if(isOperator(ast->child[0])){
-		// 	ast = operatorAST(ast->child[0],0);
-
-		// }
-		// else{
-			modifyAST(ast->child[0]);
-		//}
+		modifyAST(ast->child[0]);
 		while(tree!=NULL){
 			tree = tree->next;
 			if(ast->child[i]->noc==1){
 				pruneAST(ast->child[i],i);
 			}
-			// if(isOperator(ast->child[i])){
-			// 	operatorAST(ast->child[i],i);
-			// }
-			// else{
-				modifyAST(ast->child[i]);
-			//}
+			modifyAST(ast->child[i]);
 			i++;
 		}
 	}
@@ -355,16 +291,17 @@ AStree modifyAST(AStree ast){
 	
 }
 
-AStree makeAST(parsetree PT){
-    //printf("Here %s\n",PT->ruleNode->name);
-    currentTable = globalTable;
-    AStree ast = parseToAST(PT);
-    //printf("Here %s\n",ast->ruleNode->name);
-    //ast = modifyAST(ast);
+AStree makeAST(parsetree PT,int abs){
+	if(abs!=0)
+   		currentTable = globalTable;
+   	else
+   		currentTable = NULL;
+    AStree ast = parseToAST(PT,abs);
+    if(abs==0)
+    	ast = modifyAST(ast);
     return ast;
 }
 
-int nodesAST =0 ;
 void printAST(AStree ast) // Prefix
 {
 	if (ast==NULL) return;
@@ -398,7 +335,6 @@ void printAST2(AStree ast) // Prefix
 		if(ast->child[i]->noc>0)
 	    	printAST2(ast->child[i]);
 	}
-	//printf("\n");
 	return;
 }
 
@@ -431,22 +367,16 @@ print a tree at a time in file
 */
 void printToConsole2(AStree tr,FILE *fp)
 {
-	//printf("Tree %s\n",tr->tk.name);
 	noast++;
     if((tr->ruleNode)->type==0)
         {
-            //printf("%15s",tr->tk.lexeme);
-            //printf("%7d",tr->tk.lineno);
-            //printf("%15s",tr->tk.name);
+
             printf("%15s",tr->tk.lexeme);
             printf("%7d",tr->tk.lineno);
             printf("%15s",tr->tk.name);
         }
 	else
         {
-            //printf("      ---------");
-            //printf("%7d",0);
-            //printf("%s"," --------------");
             printf("      ---------");
             printf("%7d",0);
             printf("%s"," --------------");
@@ -454,59 +384,46 @@ void printToConsole2(AStree tr,FILE *fp)
     if((tr->ruleNode)->type==0)
     {
         if(strcmp(tr->tk.name,"NUM")==0){
-        	//printf("%9d",atoi(tr->tk.lexeme));
         	printf("%9d",atoi(tr->tk.lexeme));
 		}
         else if(strcmp(tr->tk.name,"RNUM")==0){
-        	//printf("%9f",atof(tr->tk.lexeme));
         	printf("%9f",atof(tr->tk.lexeme));
 		}
         else {
-        	//printf("%9s","----");
         	printf("%9s","----");
 		}
     }
 	else {
-		//printf("%9s","----");
 		printf("%9s","----");
 		
 	}
     if(tr->parent!=NULL){
-    	//printf("%25s",tr->parent->ruleNode->name);
     	printf("%25s",tr->parent->ruleNode->name);
 	}
     else {
-    	//printf("%25s","ROOT");
     	printf("%25s","ROOT");
 	}
     if((tr->ruleNode)->type==0){
-    	//printf("%7s","YES");
     	printf("%7s","YES");
 	}
     else {
-    	//printf("%7s","NO");
     	printf("%7s","NO");
 	}
 	
     if(tr->ruleNode->type==1){
-		//printf("%25s",(tr->ruleNode)->name);
 		printf("%25s",(tr->ruleNode)->name);
 	}
 	else if(tr->ruleNode->type==3){
-    	//printf("%25s","EPSILON");
     	printf("%25s","EPSILON");
 	}
     else {
-    	//printf("%25s","---------");
     	printf("%25s","---------");
 	}
-    //printf("\n");
-    printf(" 10%s" ,tr->st->f.name);
     printf("\n");
 }
 
 
-void comprr()
+void calculateCompression()
 {
     int mempt = nopt * sizeof(struct treenode);
 

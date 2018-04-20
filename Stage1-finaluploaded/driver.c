@@ -33,10 +33,11 @@ int main(int argc, char *argv[])
 	createParseTable();
 	createHashtable3();
 	initSymbolTable();
+	initialiseSemantics();
 	//printParseTable();
 	// int ptdone=0;
 	parsetree PT;
-	AStree ast;
+	AStree ast1,ast2;
 	printf("%s(a) FIRST and FOLLOW set automated\n(b) Both lexical and syntax analysis modules implemented and running.\n(c) Error recovery using synchronized set implemented.\n(d) Hashing used for keyword detection.\n",BLU);
 	printf(RESET);
 	int n1=0;
@@ -90,12 +91,12 @@ int main(int argc, char *argv[])
 		        //initialiseLexer();
 		        //PT = parseInputSourceCode(argv[1],parsetable);
 		        //printParseTree(PT);
-		        makeST(PT);
-		        ast = makeAST(PT);
-		        printf("\n Inorder Traversal of AST\n\n");
+		        ast1 = makeAST(PT,0);
+		        printf("\n%sInorder Traversal of AST\n\n",GRN);
+		        printf(RESET);
 		        printf("     lexCurNode lineno          token valIfNum          parentNodeSymbol isLeaf               NodeSymbol\n");
 	     		printf("--------------------------------------------------------------------------------------------------------\n");
-		        printASTree(ast);
+		        printASTree(ast1);
 		        n3=1;
 	        }
 	        else{
@@ -106,7 +107,8 @@ int main(int argc, char *argv[])
 		}
 		else if(n==4){
 		    if(n3==1){
-			    comprr();
+		        
+			    calculateCompression();
 			    n4=1;
 		    }
 		    else{
@@ -120,13 +122,12 @@ int main(int argc, char *argv[])
 		    //printf("PT succesfull %s\n",PT->ruleNode->name);
 		    //makeST(PT);
             //printf("ST succesfull\n");
+            initSymbolTable();
             if(n3==1){
+                makeST(PT);
+                printf("%sSymbol Table \n\n",GRN);
+                printf(RESET);
 		        printSTUtility();
-		        n5=1;
-	        }
-	        else if(n2==1){
-	            makeST(PT);
-	            printSTUtility();
 		        n5=1;
 	        }
 	        else{
@@ -139,8 +140,16 @@ int main(int argc, char *argv[])
 		    //PT = parseInputSourceCode(argv[1],parsetable);
 		    //makeST(PT);
 		    //ast = makeAST(PT);
+		    initSymbolTable();
 		    if(n5==1){
-		        semanticAnalysis(ast);
+		        makeST(PT);
+		       // printf("DOne tille here\n");
+		        ast2 = makeAST(PT,1);
+		       // printf("DOne tille here\n");
+		        semanticAnalysis(ast2);
+		        if(saerror==0){
+		            printf("%sSymbol Table Generated Successfully\n",GRN);
+		        }
 	        }
 	        else{
 	            printf("%sFirst create Symbol Table using option 5\n",RED);

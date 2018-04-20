@@ -135,6 +135,8 @@ void initSymbolTable(){
 	strcpy(globalTable->f.name,"PT");
 	currentTable = globalTable;
 	currentScope = 0;
+	sterror = 0;
+	totaloffset = 0;
 }
 
 
@@ -633,5 +635,4 @@ void printSTUtility()
 	totaloffset = 0;
 	printf("Identifier             Scope 	 nesting_level     scope_Parent         type         width    offset\n" );
 	printST(globalTable);
-	printf( "\nSymbol table generated successfully\n" );
 }
