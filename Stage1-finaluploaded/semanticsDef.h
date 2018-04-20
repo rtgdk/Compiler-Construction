@@ -12,6 +12,7 @@ Rohit Lodha
 #include <stdbool.h>
 
 #include "astDef.h"
-#include "symbolTable.h"
+#include "symbolTableDef.h"
+#include "parserDef.h"
 int saerror;
 #endif

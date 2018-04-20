@@ -6,7 +6,6 @@ Rohit Lodha
 #define SYMBOLTABLEHEADER
 
 #include "symbolTableDef.h"
-#include "parserDef.h"
 
 extern void addFunction(function f, int start, int end,int type);
 extern void addInputList(parsetree node, function *f);

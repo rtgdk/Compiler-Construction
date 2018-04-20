@@ -73,5 +73,4 @@ variablenodeptr matVar,strVar;
 SymbolTablePtr matTable,strTable;
 int sterror;
 int totaloffset;
-char* types[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};
 #endif

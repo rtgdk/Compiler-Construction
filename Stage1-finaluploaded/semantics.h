@@ -6,9 +6,6 @@ Rohit Lodha
 #define SEMANTICSHEADER
 
 #include "semanticsDef.h"
-#include "symbolTableDef.h"
-#include "parserDef.h"
-#include "astDef.h"
 
 extern bool checkIOStmt(AStree ast);
 extern bool checkOperatorType(AStree op, AStree ex1, AStree ex2);

@@ -2,8 +2,8 @@
 Rohit Lodha
 2015A7PS0040P
 */
-#ifndef astdef
-#define astdef
+#ifndef ASTDEFHEADER
+#define ASTDEFHEADER
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,4 +35,5 @@ typedef struct astnode{
 
 typedef astnode* AStree;
 int noast;
+
 #endif

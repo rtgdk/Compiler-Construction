@@ -13,13 +13,15 @@ _main[]
 	matrix mat1;
 	mat1 = [1,2, 3; 4, 5, 6; 6, 7, 8];
 	[a,b] = @mat1;
+	[a,b,c] = @mat1;
+	[a,b,h] = @mat1;
 	string s1;
 	s1 = "rohit";
 	a = @s1;
 	[a,b] = @s1;
 	[a] = @s1;
 	a = @mat1; 
-	function [int sum, int diff]= _calculator[int c]
+	function [int sum, int diff]= _calculator[int c,int d]
 		sum = c + b;
 		diff = c - a;
 		prod = c*b;
@@ -51,6 +53,12 @@ _main[]
 		string g;
 		g = "done";
 	end;
+	g = _calculator(4,a);
+	g = _calculator(a,5);
+	[g,a] = _calculator(4,a);
+	[g,a] = _calculator(a,5);
+	[g,b] = _calculator(a,5);
+	
 	z = ((a -g) *(h+u))+((13-a)*(u+g));
 	g = ((a -g) *(h+u))-((10+a)*(u+g));
 	if(g>2)

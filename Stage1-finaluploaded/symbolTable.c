@@ -17,6 +17,8 @@ Rohit Lodha
 #define GRN   "\x1B[32m"
 #define RESET "\x1B[0m"
 
+char* types[] = {"INTEGER" , "REAL" , "STRING","MATRIX"};
+
 /*
 For hashing Allowed Terminals to bucket no in HashTable
 */
@@ -30,23 +32,27 @@ int hash4(char* str)
 }
 
 /*
-Initialise Symbol Table
+Return type of constant in the code
 */
-void initSymbolTable(){
-	globalTable = (SymbolTableNode*)malloc(sizeof(SymbolTableNode));
-	globalTable->type = 5; //main;
-	globalTable->start = 0;
-	globalTable->parent = NULL;
-	globalTable->counter = 0;
-	globalTable->end = 0;
-	globalTable->noc = 0;
-	globalTable->child = NULL;
-	int i;
-	for(i = 0 ; i < VariableTableSize ; i++)
-		globalTable->VariableTable[i] = NULL;
-	strcpy(globalTable->f.name,"PT");
-	currentTable = globalTable;
-	currentScope = 0;
+int getType(parsetree PT) // returns int with int,real,str and matrix, PT has noc =1
+{
+	tp type = PT->child[0]->tk.type;
+	if(type == INT) return 1;
+	if(type == REAL) return 2;
+	if(type == STRING) return 3;
+	if(type == MATRIX) return 4;
+}
+
+
+/* 
+Returns width of the variable type
+*/
+int getWidth(int type){
+	if (type==1) return 2;
+	else if(type==2) return 4;
+	else if(type==3) return 1;
+	else if(type==4) return 2;
+	else return 2;
 }
 
 /*
@@ -79,6 +85,7 @@ void addVariable(variable v,SymbolTablePtr st){
 	}
 }
 
+
 /*
  Create new symbol tabe with the  function f and fill input and output varaible to the symbol table
 */
@@ -109,6 +116,42 @@ SymbolTablePtr createNewST(function f){
 	}
 	return temp;
 }
+
+/*
+Initialise Symbol Table
+*/
+void initSymbolTable(){
+	globalTable = (SymbolTableNode*)malloc(sizeof(SymbolTableNode));
+	globalTable->type = 5; //main;
+	globalTable->start = 0;
+	globalTable->parent = NULL;
+	globalTable->counter = 0;
+	globalTable->end = 0;
+	globalTable->noc = 0;
+	globalTable->child = NULL;
+	int i;
+	for(i = 0 ; i < VariableTableSize ; i++)
+		globalTable->VariableTable[i] = NULL;
+	strcpy(globalTable->f.name,"PT");
+	currentTable = globalTable;
+	currentScope = 0;
+}
+
+
+/*
+create to variable from node's data
+*/
+variable convertNodeToVariable(parsetree node){
+	variable v;
+	strcpy(v.name,node->tk.lexeme);
+	v.linedec = node->tk.lineno;
+	v.assigned = false;
+	v.type = 0;
+	v.scopeDepth = currentScope;
+	v.width = 0;
+	return v;
+}
+
 /*
 Add function to tree list of currentTable with type and start and end line
 */
@@ -150,64 +193,6 @@ void addFunction(function f, int start, int end,int type)
 	return;
 }
 
-/*
-Return type of constant in the code
-*/
-int getType(parsetree PT) // returns int with int,real,str and matrix, PT has noc =1
-{
-	tp type = PT->child[0]->tk.type;
-	if(type == INT) return 1;
-	if(type == REAL) return 2;
-	if(type == STRING) return 3;
-	if(type == MATRIX) return 4;
-}
-
-
-/* 
-Returns width of the variable type
-*/
-int getWidth(int type){
-	if (type==1) return 2;
-	else if(type==2) return 4;
-	else if(type==3) return 1;
-	else if(type==4) return 2;
-	else return 2;
-}
-
-/*
-create varaible from node's data
-*/
-variable convertNodeToVariable(parsetree node){
-	variable v;
-	strcpy(v.name,node->tk.lexeme);
-	v.linedec = node->tk.lineno;
-	v.assigned = false;
-	v.type = 0;
-	v.scopeDepth = currentScope;
-	v.width = 0;
-	return v;
-}
-/*
-Add node's variable node ptr to symboltable st
-*/
-void addVariableID(parsetree node, int type, SymbolTablePtr st)
-{
-	if(node->ruleNode->type==0 && node->tk.type == ID)
-	{
-		variable v= convertNodeToVariable(node);
-		v.type = type;
-		if(type==4){
-			v.row = 0;
-			v.col = 0;
-		}
-		v.width = getWidth(type);
-		addVariable(v, st);
-		return;
-	}
-	int i;
-	for(i = 0; i < node->noc ; i++)
-		addVariableID(node->child[i],type,st);
-}
 
 /*
  createa varaible pointer from node's data
@@ -223,6 +208,7 @@ variablenodeptr createVptrFromNode(parsetree node){
 	vptr->next = NULL;
 	return vptr;
 }
+
 
 /*
 Add function's input list to function's symbol table
@@ -259,6 +245,121 @@ void addInputList(parsetree node, function *f)
 	int i;
 	for(i = 0; i < node->noc ; i++)
 		addInputList(node->child[i],f);
+}
+
+
+/*
+If variable exist and is a matrix
+*/
+bool existAndMat(char* name,int lineno){
+	if(matTable == NULL )
+	{
+		return false; //NOT Defined
+	}
+	int hashvalue = hash4(name)%VariableTableSize;
+	if(matTable->VariableTable[hashvalue] == NULL)
+	{
+		matTable = matTable->parent;
+		return existAndMat(name ,lineno);
+	}
+	else
+	{
+		variablenodeptr temp = matTable->VariableTable[hashvalue];
+
+		while(temp != NULL)
+		{
+			if(temp->v.type == 4 && strcmp(temp->v.name , name) == 0 ) //anthing else??
+			{
+				if(temp->v.linedec <= lineno){
+					matVar = temp;
+					return true;
+				}
+				else{
+					return false;
+				}
+			}
+			temp = temp->next;
+		}
+		matTable = matTable->parent;
+		return existAndMat(name , lineno);
+	}
+}
+
+
+/*
+Add node's variable node ptr to symboltable st
+*/
+void addVariableID(parsetree node, int type, SymbolTablePtr st)
+{
+	if(node->ruleNode->type==0 && node->tk.type == ID)
+	{
+		variable v= convertNodeToVariable(node);
+		v.type = type;
+		if(type==4){
+			v.row = 0;
+			v.col = 0;
+		}
+		v.width = getWidth(type);
+		addVariable(v, st);
+		return;
+	}
+	int i;
+	for(i = 0; i < node->noc ; i++)
+		addVariableID(node->child[i],type,st);
+}
+
+
+
+/*
+If variable exist and is a string
+*/
+bool existAndStr(char* name,int lineno){
+	if(strTable == NULL )
+	{
+		return false; //NOT Defined
+	}
+	int hashvalue = hash4(name)%VariableTableSize;
+	if(strTable->VariableTable[hashvalue] == NULL)
+	{
+		strTable = strTable->parent;
+		return existAndStr(name ,lineno);
+	}
+	else
+	{
+		variablenodeptr temp = strTable->VariableTable[hashvalue];
+
+		while(temp != NULL)
+		{
+			if(temp->v.type == 3 && strcmp(temp->v.name , name) == 0 ) //anthing else??
+			{
+				if(temp->v.linedec <= lineno){
+					strVar = temp;
+					return true;
+				}
+				else{
+					return false;
+				}
+					
+			}
+			temp = temp->next;
+		}
+		strTable = strTable->parent;
+		return existAndStr(name , lineno);
+	}
+}
+
+/*
+Create a function with name "name"
+*/
+function createFunction(char* name){
+	function f;
+	f.noOfInput = 0;
+	f.noOfOutput = 0;
+	strcpy(f.name,name);
+	f.inputList = NULL;
+	f.outputList = NULL;
+	f.linedec = 0; //can be done outside function
+	return f;
 }
 
 /*
@@ -298,80 +399,7 @@ void addOutputList(parsetree node,function *f)
 		addOutputList(node->child[i],f);
 }
 
-/*
-If variable exist and is a matrix
-*/
-bool existAndMat(char* name,int lineno){
-	if(matTable == NULL )
-	{
-		return false; //NOT Defined
-	}
-	int hashvalue = hash4(name)%VariableTableSize;
-	if(matTable->VariableTable[hashvalue] == NULL)
-	{
-		matTable = matTable->parent;
-		return existAndMat(name ,lineno);
-	}
-	else
-	{
-		variablenodeptr temp = matTable->VariableTable[hashvalue];
 
-		while(temp != NULL)
-		{
-			if(temp->v.type == 4 && strcmp(temp->v.name , name) == 0 ) //anthing else??
-			{
-				if(temp->v.linedec <= lineno){
-					matVar = temp;
-					return true;
-				}
-				else{
-					return false;
-				}
-			}
-			temp = temp->next;
-		}
-		matTable = matTable->parent;
-		return existAndMat(name , lineno);
-	}
-}
-
-/*
-If variable exist and is a string
-*/
-bool existAndStr(char* name,int lineno){
-	if(strTable == NULL )
-	{
-		return false; //NOT Defined
-	}
-	int hashvalue = hash4(name)%VariableTableSize;
-	if(strTable->VariableTable[hashvalue] == NULL)
-	{
-		strTable = strTable->parent;
-		return existAndStr(name ,lineno);
-	}
-	else
-	{
-		variablenodeptr temp = strTable->VariableTable[hashvalue];
-
-		while(temp != NULL)
-		{
-			if(temp->v.type == 3 && strcmp(temp->v.name , name) == 0 ) //anthing else??
-			{
-				if(temp->v.linedec <= lineno){
-					strVar = temp;
-					return true;
-				}
-				else{
-					return false;
-				}
-					
-			}
-			temp = temp->next;
-		}
-		strTable = strTable->parent;
-		return existAndStr(name , lineno);
-	}
-}
 
 /*
 Calculate columns of the matrix row rhs
@@ -472,16 +500,7 @@ void updateStrSize(parsetree rhs) // rhs is RHS TYPE1
 	}
 }
 
-function createFunction(char* name){
-	function f;
-	f.noOfInput = 0;
-	f.noOfOutput = 0;
-	strcpy(f.name,name);
-	f.inputList = NULL;
-	f.outputList = NULL;
-	f.linedec = 0; //can be done outside function
-	return f;
-}
+
 
 /*
 Utility function for making Symbol Table

@@ -1,134 +1,22 @@
-     lexCurNode lineno          token valIfNum          parentNodeSymbol isLeaf               NodeSymbol
---------------------------------------------------------------------------------------------------------
-          _main      1           MAIN     ----           <mainFunction>    YES                ---------
-      ---------      0 --------------     ----                     ROOT     NO           <mainFunction>
-              [      1            SQO     ----           <mainFunction>    YES                ---------
-              ]      1            SQC     ----           <mainFunction>    YES                ---------
-            int      2            INT     ----                   <type>    YES                ---------
-      ---------      0 --------------     ----        <declarationStmt>     NO                   <type>
-      ---------      0 --------------     ----                   <stmt>     NO        <declarationStmt>
-              a      2             ID     ----               <var_list>    YES                ---------
-      ---------      0 --------------     ----        <declarationStmt>     NO               <var_list>
-          EMPTY     -1        EPSILON     ----               <more_ids>    YES                ---------
-      ---------      0 --------------     ----               <var_list>     NO               <more_ids>
-              ;      2      SEMICOLON     ----        <declarationStmt>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----    <stmtAndFunctionDefs>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----           <mainFunction>     NO    <stmtAndFunctionDefs>
-         matrix      3         MATRIX     ----                   <type>    YES                ---------
-      ---------      0 --------------     ----        <declarationStmt>     NO                   <type>
-      ---------      0 --------------     ----                   <stmt>     NO        <declarationStmt>
-              m      3             ID     ----               <var_list>    YES                ---------
-      ---------      0 --------------     ----        <declarationStmt>     NO               <var_list>
-          EMPTY     -1        EPSILON     ----               <more_ids>    YES                ---------
-      ---------      0 --------------     ----               <var_list>     NO               <more_ids>
-              ;      3      SEMICOLON     ----        <declarationStmt>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----    <stmtAndFunctionDefs>     NO  <moreStmtOrFunctionDef>
-              m      4             ID     ---- <leftHandSide_singleVar>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
-      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =      4       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-              [      4            SQO     ----                 <matrix>    YES                ---------
-      ---------      0 --------------     ----                    <var>     NO                 <matrix>
-              1      4            NUM        1                    <row>    YES                ---------
-      ---------      0 --------------     ----                   <rows>     NO                    <row>
-              ,      4          COMMA     ----   <remainingColElements>    YES                ---------
-      ---------      0 --------------     ----                    <row>     NO   <remainingColElements>
-              2      4            NUM        2   <remainingColElements>    YES                ---------
-              ,      4          COMMA     ----   <remainingColElements>    YES                ---------
-      ---------      0 --------------     ----   <remainingColElements>     NO   <remainingColElements>
-              3      4            NUM        3   <remainingColElements>    YES                ---------
-          EMPTY     -1        EPSILON     ----   <remainingColElements>    YES                ---------
-      ---------      0 --------------     ----   <remainingColElements>     NO   <remainingColElements>
-      ---------      0 --------------     ----                 <matrix>     NO                   <rows>
-              ;      4      SEMICOLON     ----               <moreRows>    YES                ---------
-      ---------      0 --------------     ----                   <rows>     NO               <moreRows>
-              3      4            NUM        3                    <row>    YES                ---------
-      ---------      0 --------------     ----               <moreRows>     NO                    <row>
-              ,      4          COMMA     ----   <remainingColElements>    YES                ---------
-      ---------      0 --------------     ----                    <row>     NO   <remainingColElements>
-              4      4            NUM        4   <remainingColElements>    YES                ---------
-              ,      4          COMMA     ----   <remainingColElements>    YES                ---------
-      ---------      0 --------------     ----   <remainingColElements>     NO   <remainingColElements>
-              5      4            NUM        5   <remainingColElements>    YES                ---------
-          EMPTY     -1        EPSILON     ----   <remainingColElements>    YES                ---------
-      ---------      0 --------------     ----   <remainingColElements>     NO   <remainingColElements>
-          EMPTY     -1        EPSILON     ----               <moreRows>    YES                ---------
-      ---------      0 --------------     ----               <moreRows>     NO               <moreRows>
-              ]      4            SQC     ----                 <matrix>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-      ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-          EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
-      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;      4      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-              a      5             ID     ---- <leftHandSide_singleVar>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
-      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =      5       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-              5      5            NUM        5                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-      ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-          EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
-      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;      5      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-              a      6             ID     ---- <leftHandSide_singleVar>    YES                ---------
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO <leftHandSide_singleVar>
-      ---------      0 --------------     ----                   <stmt>     NO   <assignmentStmt_type1>
-              =      6       ASSIGNOP     ----   <assignmentStmt_type1>    YES                ---------
-              a      6             ID     ----                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-          EMPTY     -1        EPSILON     ----          <matrixElement>    YES                ---------
-      ---------      0 --------------     ----                    <var>     NO          <matrixElement>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-      ---------      0 --------------     ----    <rightHandSide_type1>     NO   <arithmeticExpression>
-              +      6           PLUS     ---- <operator_lowPrecedence>    YES                ---------
-      ---------      0 --------------     ----          <moreTerms_one>     NO <operator_lowPrecedence>
-      ---------      0 --------------     ----   <arithmeticExpression>     NO          <moreTerms_one>
-              b      6             ID     ----                    <var>    YES                ---------
-      ---------      0 --------------     ----       <arithmeticFactor>     NO                    <var>
-          EMPTY     -1        EPSILON     ----          <matrixElement>    YES                ---------
-      ---------      0 --------------     ----                    <var>     NO          <matrixElement>
-      ---------      0 --------------     ----         <arithmeticTerm>     NO       <arithmeticFactor>
-      ---------      0 --------------     ----          <moreTerms_one>     NO         <arithmeticTerm>
-          EMPTY     -1        EPSILON     ----          <moreTerms_two>    YES                ---------
-      ---------      0 --------------     ----         <arithmeticTerm>     NO          <moreTerms_two>
-          EMPTY     -1        EPSILON     ----          <moreTerms_one>    YES                ---------
-      ---------      0 --------------     ----          <moreTerms_one>     NO          <moreTerms_one>
-      ---------      0 --------------     ----   <assignmentStmt_type1>     NO    <rightHandSide_type1>
-              ;      6      SEMICOLON     ----   <assignmentStmt_type1>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-          print      7          PRINT     ----                 <ioStmt>    YES                ---------
-      ---------      0 --------------     ----                   <stmt>     NO                 <ioStmt>
-              (      7             OP     ----                 <ioStmt>    YES                ---------
-              a      7             ID     ----                 <ioStmt>    YES                ---------
-              )      7             CL     ----                 <ioStmt>    YES                ---------
-              ;      7      SEMICOLON     ----                 <ioStmt>    YES                ---------
-      ---------      0 --------------     ----      <stmtOrFunctionDef>     NO                   <stmt>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO      <stmtOrFunctionDef>
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-          EMPTY     -1        EPSILON     ----  <moreStmtOrFunctionDef>    YES                ---------
-      ---------      0 --------------     ----  <moreStmtOrFunctionDef>     NO  <moreStmtOrFunctionDef>
-            end      8            END     ----           <mainFunction>    YES                ---------
+extern printf
+ extern scanf
+section .data
+formatin : db "%d",0
+formatout : db "%d",10,0
+section .bss
+la2: resw 1
+lb7: resw 1
+lc4: resw 1
+ld4: resw 1
+section .text
+ GLOBAL main
+main:
+mov ax,dx
+movsx rax,ax
+push rax
+mov dx,9
+pop rax
+add dx,ax
+mov ebx,0
+mov eax,1
+int 0x80

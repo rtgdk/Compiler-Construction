@@ -499,12 +499,12 @@ void printtokens(char *name)
         printf("File %s does not exist!\n" , name);
         return;
     }    
-  printf("   line       Name      LEXEME\n");
+  printf("   LINE             LEXEME            TOKEN NAME\n");
   to=getNextToken(fp,1);
   while(to.type!=EOF1 && strcmp(to.name,"")!=0)
     {
 		if(to.type!=ERROR){
-			printf("%6d%14s%16s\n",to.lineno,to.name,to.lexeme);
+			printf("%6d%20s%20s\n",to.lineno,to.lexeme,to.name);
 		}
       to=getNextToken(fp,1);
    }
