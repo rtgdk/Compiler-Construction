@@ -1,0 +1,7 @@
+_main[]
+	int a;
+	a = 5;
+	a = a + b*c-d*e;
+	# whether variable identifiers are declared or not will be seen by the semantic analyzer
+	print(a);
+end
