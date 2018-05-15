@@ -3,8 +3,8 @@
 #include "lexerDef.h"
 #define NO_OF_RULES 44
 #define hashtablesize 100 
-#define NO_OF_TERMINALS=40;
-#define NO_OF_NONTERMINALS=44;
+#define NO_OF_TERMINALS 40
+#define NO_OF_NONTERMINALS 44
 
 // can also use enum in place of int type
 typedef struct grammarnode{

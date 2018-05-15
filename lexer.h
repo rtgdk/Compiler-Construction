@@ -11,3 +11,5 @@ FILE *getStream(FILE* fp, char* buffer);
 void removeComments(char *testcaseFile, char *cleanFile);
 tokenInfo* getNextToken(FILE *fp, char* buf[], char** begin, char** forward, 
 	int* currentBuf, unsigned long int* currentLine);
+	
+#endif

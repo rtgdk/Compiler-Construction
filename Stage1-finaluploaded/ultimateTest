@@ -39,20 +39,23 @@ _main[]
 		function [int sum]= _calculator[int c]
 		    sum = c+c*c;
 		end;
-		function [int sum]= _calculator2[int c]
+		function [int sum]= _calcuLAtor2[int c]
 		    sum = c+c*c;
 		end;
 		function [int sum]= _calculator2[int c]
 		    sum = c+c*c;
 		end;
-		#_main();
 		int ffg;
-		_calculator(5);
+		[sum,diff] = _calculator(5,6);
 		real f;
 		f = 4/3;
 		string g;
 		g = "done";
 	end;
+	g = _calculator2(g);
+	function [int sum]= _calculator2[int c]
+	    sum = a;
+    end;
 	g = _calculator(4,a);
 	g = _calculator(a,5);
 	[g,a] = _calculator(4,a);
@@ -61,18 +64,38 @@ _main[]
 	
 	z = ((a -g) *(h+u))+((13-a)*(u+g));
 	g = ((a -g) *(h+u))-((10+a)*(u+g));
-	if(g>2)
+	if(z>2)
 		x = 5;
 	else
 		x = 10;
 	endif;
-	if(g<2)
+	if(g1<2)
 		x = 15;
 	else
 		x = 20;
 	endif;
-	int f;
-	f = 0;
+	matrix m1,m2,m3,m4;
+	m1 = [1,2,3;4,5,6;7,8,9];
+	m2 = [1,21,22;44,45,46;55,56,57];
+	m3 = [1,2;4,5];
+	m4 = m1+m2;
+	m4 = m1+m3;
+	m4 = m1-m2;
+	m4 = m1-m3;
+	m4 = m1/m2;
+	m4 = m1*m2;
+	real r1,r2,r3;
+	r1 = 13.56;
+	r2 = 15.46;
+	r3 = (r1/r2)+r2-r1*r2;
+	string st1,st2,st3;
+	st1 = "hey";
+	st2="het";
+	st3 = st1+st2;
+	st3 = st1-st2;
+	st3 = st1*st2;
+	st3 = st1/st2;
+	
 end
 
 #Semantic errors

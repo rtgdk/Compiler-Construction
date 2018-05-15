@@ -2,11 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "lexer.h"
+//#include "lexer.h"
+#include "lexerDef.h"
 
 #define MAX_SIZE 30
 char buffer2[MAX_SIZE];
-int buffersize
+int buffersize;
 int lineno = 1;
 int currentpos=0;
 int buffer_size = -1;
@@ -96,24 +97,24 @@ int isKeyword(tokenInfo tk,char* name){
 /*
 return charcater of the file one by one
 */	
-FILE *getStream(FILE *fp,int k) //k is buffersize
-    {
-        size_t file_size;                                //size of the file
-        if (fp == NULL) {
-			printf("No file")
-			return fp;
-		}
-		file_size=fread(B,sizeof(char),MAXIMUM,fp);   //allocating buffer with file contents
-        if(file_size==0){
-			buffer[0]=EOF;
-		}
-		else if(file_size<sizeof(char)*buffersize){
-			buffer[file_size] =EOF;
-		}
-		buffer[bufferSize]='\0';
-		if(feof(fp))B[file_size]='$';            //assigning bottom-marker of buffer with $
-        return fp;
-    }
+//FILE *getStream(FILE *fp,int k) //k is buffersize
+//    {
+//        size_t file_size;                                //size of the file
+//        if (fp == NULL) {
+//			printf("No file");
+//			return fp;
+//		}
+//		file_size=fread(B,sizeof(char),MAXIMUM,fp);   //allocating buffer with file contents
+//        if(file_size==0){
+//			buffer[0]=EOF;
+//		}
+//		else if(file_size<sizeof(char)*buffersize){
+//			buffer[file_size] =EOF;
+//		}
+//		buffer[bufferSize]='\0';
+//		if(feof(fp))B[file_size]='$';            //assigning bottom-marker of buffer with $
+//        return fp;
+//    }
 
 /*
 return charcater of the file one by one
@@ -135,7 +136,7 @@ char getChar(FILE* f)
 /*
 print code after removing comments
 */	
-void removeComments(char *testcaseFile, char *cleanFile){
+void removeComments(char *testcasefile, char *cleanFile){
 	FILE* f1 = fopen(testcasefile , "r");
     if(f1 == NULL)
     {

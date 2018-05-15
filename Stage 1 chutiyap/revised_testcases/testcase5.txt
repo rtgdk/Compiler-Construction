@@ -1,0 +1,45 @@
+_main[]
+	matrix mat1, mat2;
+	read(mat1);
+	mat2 = [6, 1, 10; 6, 10, 0] + a12;
+	
+	#a12 will be tokenized as ID NUM and will cause syntax error above
+	#as a1 will be the valid ID and then remaining 2 will be the NUM 
+
+	m = mat1 + mat2;
+
+	# whether m is declared or not will be seen by the semantic analyzer
+	# whether sizes of mat1 and mat2 are compatible for addition or not 
+	#will be seen by the semantic analyser later
+	
+	print(5);
+	
+	# Syntax error above
+	
+	
+	String s = "abc";
+
+	#above has two errors one in the recognition of the lexeme String as ID 
+	# and not that as STRING
+	# another error is that initialization is not correct at the declaration statement
+	
+	#also ensure that your lexer ignores comments and white spaces properly
+	a = a          + 20;
+	a = jkewhdkjehjdewjhjhefhjhdfhjhdsjfkgjgh9 + aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2;
+
+	#above are the identifiers of length larger than 20, check that your lexer reports the error
+
+	a = w1+200.23;
+
+	#evenif the above has no blanks in between, check that the expression on the right is tokenized
+	#ID PLUS RNUM SEMICOLON
+	string s;
+	s = "number";
+	a = @s;
+	#above is syntactically correct
+
+	a = @"number";
+	#above is syntactically wrong
+
+
+end

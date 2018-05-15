@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include "lexer.c"
+#include "parserDef.h"
 #define hashtablesize 100
 
 char buffer[200];
 int** firstMatrix;
 int** followMatrix;
+int** synchMatrix;
 GrammarNode** parsetable;
 
 /*
@@ -25,6 +28,7 @@ int hash(char* str)//hash from string to bucket number
 For printing HashTable
 */
 void printHashTable(){
+	int i;
 	for (i=0;i<hashtablesize;i++){
 		hashtable* temp = HashTable[i];
 		printf("%d-->",i);
@@ -762,7 +766,7 @@ parsetree next(parsetree tree){
 }
 
 /*
-Update tree token
+Update tree token and returns next
 */
 parsetree tokenizeTree(parsetree tree,tokenInfo tk){
 	strcpy(tree->tk.name,tk.name);
@@ -818,6 +822,71 @@ parsetree addChildren(parsetree tree, GrammarNode ruleNode){ // A->BCD ruleNode 
 	return tree->child[0];
 }
 
+/*
+Check whether stack is empty or not
+*/
+bool isStackEmpty(Stack* st){
+	//printf("in stack empty---> %s -- %s",(*st)->top->name, (*st)->bottom->name);
+	if ((*st)->top->prev==NULL) return true;
+	GrammarNode gn = top(st);
+	hashtable* hashNode;
+	hashNode = present(gn->name);
+	while(hashNode!=NULL && firstMatrix[hashNode->ruleNode][NO_OF_TERMINALS-1]==1){
+		pop(st);
+		gn = top(st);
+		hashNode = present(gn->name);
+	}
+	if ((*st)->top->prev==NULL) return true;
+	else return false;
+}
+
+/*
+Intialises Sync Matrix
+*/
+void initialiseSynchMatrix(){
+	synchMatrix = (int **)malloc(sizeof(int*)*NO_OF_NONTERMINALS);
+	int i,j;
+	for(i=0;i<NO_OF_NONTERMINALS;i++){
+		synchMatrix[i] = (int*)malloc(sizeof(int)*NO_OF_TERMINALS);
+		for(j=0;j<NO_OF_TERMINALS;j++){
+			synchMatrix[i][j] = followMatrix[i][j];
+			if(j==4){
+				synchMatrix[i][j] = 1;
+			}
+		}
+	}
+}
+
+/*
+Returns expected tokens for Node <name>
+*/
+char* expectedToken(char* name){
+	//printf("Finding expected of %s\n",name);
+	hashtable* hashNode;
+	hashNode = present(name);
+	char str[200];
+	strcpy(str,""); 
+	int i;
+	if(firstMatrix[hashNode->ruleNode][NO_OF_TERMINALS-1]==1){
+		for(i=0;i<NO_OF_TERMINALS-1;i++){
+			if(followMatrix[hashNode->ruleNode][i]==1 || firstMatrix[hashNode->ruleNode][i]==1 ){
+				strcat(str,terminals[i]); 
+				strcat(str,",");
+			}
+		}
+	}
+	else{
+		for(i=0;i<NO_OF_TERMINALS-1;i++){
+			if(firstMatrix[hashNode->ruleNode][i]==1){
+				strcat(str,terminals[i]); 
+				strcat(str,",");
+			}
+		}
+	}
+	//printf("%s", str);
+	return str;
+}
+
 
 /*
 Parse Input from the source file
@@ -838,46 +907,101 @@ parsetree parseInputSourceCode(char *testcaseFile, GrammarNode** parsetable){
 	push(&st,grammer[0]->head->next); //main rule
 	//printf("Done with Push");
 	ParseTree = addChildren(ParseTree,grammer[0]->head->next);
-	printf("Checking %s",ParseTree2->ruleNode->name);
-	printf("Checking %s",ParseTree2->child[0]->ruleNode->name);
+	initialiseSynchMatrix();
+	//printf("Checking %s",ParseTree2->ruleNode->name);
+	//printf("Checking %s",ParseTree2->child[0]->ruleNode->name);
 	//printf("Done with addchild");
 	//printf("Added child and stack");
 	tokenInfo tk = getNextToken(fp);
 	tokenInfo tk2;
 	GrammarNode gn;
+	hashtable* hashNode;
 	int error = 0;
 	int i;
+	int prevlineno;
 	//printf("Going in parseInputWhile");
 	while(tk.type!=EOF1){
 		//printf("%s--%s found\n",tk.name,tk.lexeme);
-		printf("%s type\n",ParseTree->ruleNode->name);
+		if (tk.type==ERROR){
+			tk = getNextToken(fp);
+			continue;
+		}
+		//printf("%s type\n",ParseTree->ruleNode->name);
 		gn = top(&st);
+		//printf("on top %s\n",gn->name);
 		if(gn->type==1){ // 
 			//printf("NT on top %s\n",gn->name);
-			hashtable* hashNode;
 			hashNode = present(gn->name);
 			for(i=0;i<NO_OF_TERMINALS;i++){
 				if(strcmp(tk.name,terminals[i])==0) break;
 			}
-			if(i==NO_OF_TERMINALS){
-				printf("\n%d: Syntax Error: Unrecognised term.\n",tk.lineno,tk.name);
+//			if(i==NO_OF_TERMINALS){ //already done by lexer
+//				printf("\n%d: Syntax Error: Unrecognised symbol.\n",tk.lineno,tk.name);
+//				error++;
+//				tk = getNextToken(fp);
+//			}
+//			else{
+			GrammarNode newnode= parsetable[hashNode->ruleNode][i];
+			if(newnode==NULL){
+				char* expectedTk = expectedToken(gn->name);
+				printf("\nLine No.%d: Syntax Error: The token '%s' for lexeme '%s' does not match at line %d. The expected token here is one of <%s>.\n",tk.lineno,tk.name,tk.lexeme,tk.lineno,expectedTk);
 				error++;
-				tk = getNextToken(fp);
-			}
-			else{
-				GrammarNode newnode= parsetable[hashNode->ruleNode][i];
-				if(newnode==NULL){
-					printf("\n%d: Syntax Error: The token '%s' for lexeme '%s' does not match at line %d. The expected token here is '%s'.",tk.lineno,tk.name,tk.lexeme,tk.lineno,gn->name);
-					error++;
-					tk = getNextToken(fp);
+				//error recovery
+				for(i=0;i<NO_OF_TERMINALS;i++){
+					if(strcmp(tk.name,terminals[i])==0) break;
+				}
+				if (synchMatrix[hashNode->ruleNode][i]==1){
+					printf("Error recovery: Found %s in synchronized set.\n",tk.name);
+					pop(&st);
+					ParseTree = next(ParseTree);
 				}
 				else{
+					printf("Error recovery: Skiping" );
+					char* name;
+					while(tk.type!=EOF1 && synchMatrix[hashNode->ruleNode][i]==0 ){ //&& isKeyword(tk,name)==-1
+						printf(",%s",tk.name);
+						tk = getNextToken(fp);
+						for(i=0;i<NO_OF_TERMINALS;i++){
+							if(strcmp(tk.name,terminals[i])==0) break;
+						}
+					}
+					printf(". ");
+					if(tk.type==EOF1 ) { //|| isKeyword(tk,name)!=-1
+						printf("Missing semicolon at line %d\n",prevlineno);
+						break; //if(tk.type==EOF1) 
+					}
 					pop(&st);
-					push(&st,newnode);
-					ParseTree = addChildren(ParseTree,newnode);
+					ParseTree = next(ParseTree);
+					printf("Found match for %s in in synchronized set.",tk.name);
 				}
-				
+//					tk = getNextToken(fp);
+//					int flag=1;
+//					while(tk.type!=EOF1 && flag==1){
+//						for(i=0;i<NO_OF_TERMINALS;i++){
+//							if(strcmp(tk.name,terminals[i])==0) break;
+//						}
+//						if(synchMatrix[hashNode->ruleNode][i]==1){
+//							printf("Found Synch for %s",tk.name);
+//							flag=0;
+//							pop(&st);
+//							while()
+//							//ParseTree = retractTree(ParseTree,tk);
+//							break;
+//						}
+//						else{
+//							printf("Skiping %s",tk.name);
+//							tk = getNextToken(fp);
+//						}
+//					}
+				//if(tk.type==EOF1) break;
 			}
+			else{
+				pop(&st);
+				push(&st,newnode);
+				ParseTree = addChildren(ParseTree,newnode);
+			}
+				
+			//}
 			
 		}
 		else{ // check whether to chekc for EPSILON and |
@@ -885,8 +1009,8 @@ parsetree parseInputSourceCode(char *testcaseFile, GrammarNode** parsetable){
 			if(strcmp(gn->name,"EPSILON")==0){
 				//printf("here");
 				strcpy(tk2.name,"EPSILON");
-				strcpy(tk2.lexeme," ");
-				tk2.lineno = 0;
+				strcpy(tk2.lexeme,"EMPTY");
+				tk2.lineno = -1;
 				tk2.type = 3;
 				pop(&st);
 				ParseTree = tokenizeTree(ParseTree,tk2);
@@ -894,25 +1018,32 @@ parsetree parseInputSourceCode(char *testcaseFile, GrammarNode** parsetable){
 			else if(strcmp(gn->name,tk.name)==0){
 				pop(&st);
 				ParseTree = tokenizeTree(ParseTree,tk);
+				prevlineno = tk.lineno;
 				tk = getNextToken(fp);
 			}
 			else{
-				printf("\n%d: Syntax Error: The token '%s' for lexeme '%s' does not match at line %d. The expected token here is '%s'.",tk.lineno,tk.name,tk.lexeme,tk.lineno,gn->name);
+				printf("\nLine No.%d: Syntax Error: The token '%s' for lexeme '%s' does not match at line %d. The expected token here is '%s'.\n",tk.lineno,tk.name,tk.lexeme,tk.lineno,gn->name);
 				error++;
+				printf("Error recovery: Token '%s' inserted.\n",gn->name);
+				pop(&st);
+				ParseTree = next(ParseTree);
+				prevlineno = tk.lineno;
 				tk = getNextToken(fp);
 			}
 		}
 		//printf("%d type",tk.type);
 	}
-	
-	if(error==0){ //tk.type==EOF && 
-		printf("Input source code is syntactically correct\n");
+	if (!isStackEmpty(&st)){
+		printf("Stack not empty. Input source code is not syntactically correct. Total %d errors found\n",error);
+	}
+	else if(error==0){ //tk.type==EOF && 
+		printf("\nInput source code is syntactically correct\n");
 	}
 	else{
-		printf("Input source code is not syntactically correct. Total %d errors found\n",error);
+		printf("\nInput source code is not syntactically correct. Total %d errors found\n",error);
 	}
-	printf("Checking %s",ParseTree2->child[0]->ruleNode->name);
-	printf("Checking %s",ParseTree2->child[3]->child[0]->ruleNode->name);
+	//printf("Checking %s",ParseTree2->child[0]->ruleNode->name);
+//	printf("Checking %s",ParseTree2->child[3]->child[0]->ruleNode->name);
 	return ParseTree2;
 }
 
@@ -920,28 +1051,38 @@ parsetree parseInputSourceCode(char *testcaseFile, GrammarNode** parsetable){
 /*
 Print parse tree
 */
-void printParseTree(parsetree PT, char* outfile)
+void printParseTree(parsetree PT, FILE* fp)
 {
-	FILE *fp;
-	fp = fopen (outfile,"w");
-	printf("\n      lexCurNode lineno          token valIfNum          parentNodeSymbol isLeaf               NodeSymbol\n");
-	do	{
-		if(PT==NULL )return;
-		else if(PT->child[0]!=NULL){
-			fileprint(PT,fp);
-			//printf("in else if");
-			PT=PT->child[0];
-			//printf("in else if");
-			}
-		else {
+	if (PT==NULL) return;
+//	do	{
+//		if(PT==NULL )return;
+//		else if(PT->child[0]!=NULL){
+//			fileprint(PT,fp);
+//			//printf("in else if");
+//			PT=PT->child[0];
+//			//printf("in else if");
+//			}
+//		else {
+//		fileprint(PT,fp);
+//		//printf("in else");
+//		PT=next(PT);
+//		//printf("in else");
+//		}
+//	}
+//	while(PT->parent!=NULL);
+	if(PT->child[0]!=NULL){
+		printParseTree(PT->child[0],fp);
+		parsetree temp = PT->child[0]->next;
 		fileprint(PT,fp);
-		//printf("in else");
-		PT=next(PT);
-		//printf("in else");
+		while(temp!=NULL){
+			printParseTree(temp,fp);
+			temp= temp->next;
 		}
 	}
-	while(PT->parent!=NULL);
-	fclose(fp);
+	else{
+		fileprint(PT,fp);
+	}
+	
 	return;
 }
 
@@ -949,7 +1090,7 @@ void printParseTree(parsetree PT, char* outfile)
 /*
 print a tree at a time in file 
 */
-void fileprint(parsetree tr,FILE *f)
+void fileprint(parsetree tr,FILE *fp)
 {
 	//printf("Tree %s\n",tr->tk.name);
     if((tr->ruleNode)->type==0)
@@ -957,27 +1098,70 @@ void fileprint(parsetree tr,FILE *f)
             printf("%15s",tr->tk.lexeme);
             printf("%7d",tr->tk.lineno);
             printf("%15s",tr->tk.name);
+            fprintf(fp,"%15s",tr->tk.lexeme);
+            fprintf(fp,"%7d",tr->tk.lineno);
+            fprintf(fp,"%15s",tr->tk.name);
         }
 	else
         {
             printf("      ---------");
             printf("%7d",0);
             printf("%s"," --------------");
+            fprintf(fp,"      ---------");
+            fprintf(fp,"%7d",0);
+            fprintf(fp,"%s"," --------------");
         }
     if((tr->ruleNode)->type==0)
     {
-        if(strcmp(tr->tk.name,"NUM")==0)printf("%9d",atoi(tr->tk.lexeme));
-        else if(strcmp(tr->tk.name,"RNUM")==0)printf("%9f",atof(tr->tk.lexeme));
-        else printf("%9s","----");
+        if(strcmp(tr->tk.name,"NUM")==0){
+        	printf("%9d",atoi(tr->tk.lexeme));
+        	fprintf(fp,"%9d",atoi(tr->tk.lexeme));
+		}
+        else if(strcmp(tr->tk.name,"RNUM")==0){
+        	printf("%9f",atof(tr->tk.lexeme));
+        	fprintf(fp,"%9f",atof(tr->tk.lexeme));
+		}
+        else {
+        	printf("%9s","----");
+        	fprintf(fp,"%9s","----");
+		}
     }
-	else printf("%9s","----");
-    if(tr->parent!=NULL)printf("%25s",tr->parent->ruleNode->name);
-    else printf("%25s","ROOT");
-    if((tr->ruleNode)->type==0)printf("%7s","YES");
-    else printf("%7s","NO");
-    if(tr->ruleNode->type==1){printf("%25s",(tr->ruleNode)->name);}
-    else printf("%25s","---------");
+	else {
+		printf("%9s","----");
+		fprintf(fp,"%9s","----");
+		
+	}
+    if(tr->parent!=NULL){
+    	printf("%25s",tr->parent->ruleNode->name);
+    	fprintf(fp,"%25s",tr->parent->ruleNode->name);
+	}
+    else {
+    	printf("%25s","ROOT");
+    	fprintf(fp,"%25s","ROOT");
+	}
+    if((tr->ruleNode)->type==0){
+    	printf("%7s","YES");
+    	fprintf(fp,"%7s","YES");
+	}
+    else {
+    	printf("%7s","NO");
+    	fprintf(fp,"%7s","NO");
+	}
+	
+    if(tr->ruleNode->type==1){
+		printf("%25s",(tr->ruleNode)->name);
+		fprintf(fp,"%25s",(tr->ruleNode)->name);
+	}
+	else if(tr->ruleNode->type==3){
+    	printf("%25s","EPSILON");
+    	fprintf(fp,"%25s","EPSILON");
+	}
+    else {
+    	printf("%25s","---------");
+    	fprintf(fp,"%25s","---------");
+	}
     printf("\n");
+    fprintf(fp,"\n");
     //printf("Done with fileprint\n");
 }
 
@@ -998,8 +1182,13 @@ int main(){
 	 //printFirstSet();
 	 initParseTable();
 	 createParseTable();
-	 printParseTable();
+	 //printParseTable();
 	  
-	 parsetree PT = parseInputSourceCode("testcase4.txt",parsetable);
-	 printParseTree(PT,"output1.txt");	 
+	 parsetree PT = parseInputSourceCode("testcase5.txt",parsetable);
+	 FILE *fp;
+	 fp = fopen ("output1.txt","w");
+	 printf("\n      lexCurNode lineno          token valIfNum          parentNodeSymbol isLeaf               NodeSymbol\n");
+	 fprintf(fp,"     lexCurNode lineno          token valIfNum          parentNodeSymbol isLeaf               NodeSymbol\n");
+	 printParseTree(PT,fp);
+	 fclose(fp);	 
 }

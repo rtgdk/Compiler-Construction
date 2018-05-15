@@ -5,7 +5,7 @@ _main[     ]
 	    c = d;
     end;
     int b;
+    b = 5.55;
     string e;
-    b = _ff(e);
 end
 

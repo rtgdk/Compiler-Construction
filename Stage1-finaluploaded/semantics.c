@@ -110,15 +110,14 @@ function checkFunction(char* fname, SymbolTablePtr st, int lineno) //Check if fu
 			{
 				if(strcmp(temp->child[i]->f.name , fname) == 0)
 				{
-					if(lineno >= temp->child[i]->f.linedec)
-					{
-						return temp->child[i]->f;
-					}
-					else
+					if(temp->child[i]->f.linedec > lineno )
 					{
 						printf( "Line No.%d : Function '%s' not declared yet. Defination found later in line %d. Function cannot be called before defination.\n" , lineno, fname ,temp->child[i]->f.linedec);
 						saerror = 1;
 						return f;
+					}
+					else{
+						return temp->child[i]->f;
 					}
 				}	
 			}	
@@ -144,36 +143,29 @@ bool outputType(AStree ast , function *f)
 	if(ast->ruleNode->type==0){
 		if(ast->tk.type == ID)
 		{
-			variablenodeptr vptr = (variablenodeptr)malloc(sizeof(variablenode));
+			variablenodeptr vptr = createVptrFromNode(ast);
 			vptr->v.type = getTypeID(ast->tk.lexeme , ast->st, ast->tk.lineno); 
 			f->noOfOutput++;
-			
 			if(vptr->v.type == 5)
 			{
 				return false;
-			}
-
-			strcpy(vptr->v.name, ast->tk.lexeme);
-			vptr->v.linedec = ast->tk.lineno;
-			vptr->next = NULL;
-
-			if(f->outputList == NULL)
-				f->outputList = vptr;
-			else
-			{
+			}	
+			if(f->outputList != NULL)
 				variablenodeptr temp = f->outputList;
 				while(temp->next != NULL)
 				{
 					temp = temp->next;
 				}
 				temp->next = vptr;
+			}
+			else{
+				f->outputList = vptr;
 			}		
 		}
 	}
 	for(i = 0 ; i < ast->noc ; i++)
 	{
-		bool res = outputType(ast->child[i] , f);
-		if(!res)
+		if(outputType(ast->child[i] , f)==false)
 			return false;
 	}
 	return true;
@@ -186,11 +178,7 @@ void markAssigned(variablenodeptr v , SymbolTablePtr st) // mark for assigned
 {
 	int hashvalue = hash4(v->v.name)%VariableTableSize;
 
-	if(st->VariableTable[hashvalue] == NULL)
-	{
-		markAssigned(v , st->parent);
-	}
-	else
+	if(st->VariableTable[hashvalue] != NULL)
 	{
 		variablenodeptr temp = st->VariableTable[hashvalue];
 
@@ -204,6 +192,9 @@ void markAssigned(variablenodeptr v , SymbolTablePtr st) // mark for assigned
 			temp = temp->next;
 		}
 		return markAssigned(v , st->parent);
+	}
+	else{
+		markAssigned(v , st->parent);
 	}
 }
 
@@ -243,7 +234,28 @@ bool checkOperatorType(AStree op, AStree ex1, AStree ex2){
 	}
 	else if(op->child[0]->tk.type == MINUS){
 		if(ex1->type==ex2->type){
-			if (ex1->type==1 || ex1->type==2 || ex1->type==4) return true;
+			if (ex1->type==1 || ex1->type==2 || ex1->type==4) {
+				if(ex1->type==4){
+					AStree temp = ex1;
+					while(strcmp(temp->ruleNode->name,"<var>")!=0){
+						temp = temp->child[0];
+					}
+					temp = temp->child[0];
+					AStree temp2 = ex2;
+					while(strcmp(temp2->ruleNode->name,"<var>")!=0){
+						temp2 = temp2->child[0];
+					}
+					temp2 = temp2->child[0];
+					variablenodeptr v1 = getID(temp->tk.lexeme,temp->st);
+					variablenodeptr v2 = getID(temp2->tk.lexeme,temp2->st);
+					if(v1->v.row!=v2->v.row || v1->v.col!=v2->v.col){
+						saerror = 1;
+						printf( "Line No. %d: Matrix Size mismatch for '%s' operator. Got %dx%d(%s) on left and %dx%d rows(%s) on right side\n",op->child[0]->tk.lineno, op->child[0]->tk.lexeme, v1->v.row,v1->v.col,v1->v.name,v2->v.row,v2->v.col,v2->v.name);
+						return false;
+					}
+				}
+				return true;
+			}
 			else {
 				saerror = 1;
 				printf( "Line No. %d: Type mismatch for '%s' operator. '%s' does not support '%s' operation.\n",op->child[0]->tk.lineno, op->child[0]->tk.lexeme,types1[ex1->type-1],op->child[0]->tk.lexeme);
@@ -292,51 +304,48 @@ Check compatibility of the two functions
 */
 bool compatibleFunction(function f1, function f2, int line) //check if defined and called fn are type checked
 {	
-
+	variablenodeptr inp1 = f1.inputList;
 	if(f1.noOfInput != f2.noOfInput)
 	{
 		saerror = 1;
 		printf( "Line No.%d : Count of input arguments(%d) passed to the function call '%s' do not match with count of input parameters(%d) in function defination\n" , line,f1.noOfInput, f2.name,f2.noOfInput );
 		return false;
 	}
-
+	variablenodeptr out1 = f1.outputList;
 	if(f1.noOfOutput != f2.noOfOutput)
 	{
 		saerror = 1;
 		printf( "Line No.%d : Count of output variables(%d) passed to the function call '%s' do not match with count of output parameters(%d) in function defination\n" , line, f1.noOfOutput, f2.name, f2.noOfOutput );
 		return false;
 	}
-
-	variablenodeptr tempi1 = f1.inputList;
-	variablenodeptr tempo1 = f1.outputList;
-	variablenodeptr tempi2 = f2.inputList;
-	variablenodeptr tempo2 = f2.outputList;
+	variablenodeptr inp2 = f2.inputList;
 	int count = 1;
-	while(tempi1 != NULL)
+	variablenodeptr out2 = f2.outputList;
+	while(inp1 != NULL)
 	{
-		if(tempi1->v.type != tempi2->v.type)
+		if(inp1->v.type != inp2->v.type)
 		{
 			saerror = 1;
-			printf( "Line No.%d : Mismatch in input argument %d of function call '%s' : Expected type %s but found type %s\n",f1.linedec,count,f2.name,types1[tempi2->v.type-1],types1[tempi1->v.type-1] );
+			printf( "Line No.%d : Mismatch in input argument %d of function call '%s' : Expected type %s but found type %s\n",f1.linedec,count,f2.name,types1[inp2->v.type-1],types1[inp1->v.type-1] );
 			return false;
 		}
 		count++;
-		tempi1 = tempi1->next;
-		tempi2 = tempi2->next;
+		inp1 = inp1->next;
+		inp2 = inp2->next;
 	}
 
 	count = 1;
-	while(tempo1 != NULL)
+	while(out1 != NULL)
 	{
-		if(tempo1->v.type != tempo2->v.type)
+		if(out1->v.type != out2->v.type)
 		{
 			saerror = 1;
-			printf( "Line No.%d : Mismatch in output argument %d of function call '%s' : Expected type %s but found type %s\n",line,count,f2.name,types1[tempo2->v.type-1],types1[tempo1->v.type-1] );
+			printf( "Line No.%d : Mismatch in output argument %d of function call '%s' : Expected type %s but found type %s\n",line,count,f2.name,types1[out2->v.type-1],types1[out1->v.type-1] );
 			return false;
 		}
 		count++;
-		tempo1 = tempo1->next;
-		tempo2 = tempo2->next;
+		out1 = out1->next;
+		out2 = out2->next;
 	}
 	return true;
 }
@@ -870,7 +879,7 @@ bool checkRelationalOp(AStree ast){
 	}
 	if(ast->parent->child[0]->type!= ast->parent->child[2]->type){
 		saerror = 1;
-		printf( "Line No.%d : Type Mismatch for for '%s' operation. Got %s(%s) on left and %s(%s) on right.\n" , ast->child[0]->tk.lineno,ast->child[0]->tk.lexeme ,types1[ast->parent->child[0]->type-1],ast->parent->child[0]->child[0]->tk.lexeme,types1[ast->parent->child[2]->type-1],ast->parent->child[2]->child[0]->tk.lexeme);
+		printf( "Line No.%d : Type Mismatch for '%s' operation. Got %s(%s) on left and %s(%s) on right.\n" , ast->child[0]->tk.lineno,ast->child[0]->tk.lexeme ,types1[ast->parent->child[0]->type-1],ast->parent->child[0]->child[0]->tk.lexeme,types1[ast->parent->child[2]->type-1],ast->parent->child[2]->child[0]->tk.lexeme);
 		ast->type = 5;
 		return false;
 	}
@@ -948,14 +957,13 @@ void semanticAnalysis(AStree ast)
 	else if(ast->ruleNode->type==0){
 		if ((ast->tk.type == END) && (strcmp(ast->parent->ruleNode->name,"<functionDef>")==0))
 		{
-			function f = ast->parent->child[1]->st->f;
-			variablenodeptr out_ptr = f.outputList;
+			variablenodeptr out_ptr = ast->parent->child[1]->st->f.outputList;
 			while(out_ptr != NULL)
 			{
 				variablenodeptr t = getID(out_ptr->v.name,ast->parent->child[1]->st);
 				if(t != NULL && !t->v.assigned)
 				{
-					printf( "Line No.%d : Output parameter '%s' of function '%s' is not defined in the function.\n",ast->tk.lineno, out_ptr->v.name,f.name );
+					printf( "Line No.%d : Output parameter '%s' of function '%s' is not defined in the function.\n",ast->tk.lineno, out_ptr->v.name,ast->parent->child[1]->st->f.name );
 					saerror = 1;
 				}
 				out_ptr = out_ptr->next;
@@ -972,4 +980,15 @@ void semanticAnalysis(AStree ast)
 	int i;
 	for(i = 0 ; i < ast->noc ; i++)
 		semanticAnalysis(ast->child[i]);
+}
+
+/*
+Semantic Analysis Utility
+*/
+bool semanticAnalysisUtil(AStree ast){
+	semanticAnalysis(ast);
+	if(saerror==1){
+		return false;
+	}
+	return true;
 }

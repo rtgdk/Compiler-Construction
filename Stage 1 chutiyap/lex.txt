@@ -1,0 +1,52 @@
+/***
+1. start
+2. Space,tab, new line
+3. Comment
+4. =
+5. .
+6. <
+7. >
+8. Number  --> RNUM
+9. _
+10. "
+11. a-z
+12. [
+13. ]
+14. (
+15. )
+16. ;
+17. ,
+18. +
+19. _
+20. *
+21. /
+22. @
+23. =/
+24. .a
+25. .an
+26. .and
+27. .o
+28. .or
+29. .n
+30. .no
+31. .not
+32. RNUM a.
+33. RNUM a.b
+34,35,36,37 -> Main
+38. FunID
+39. String "a
+40 String "a
+
+//Error
+
+51. ""
+52. "ErrorChar"
+53. ">20"
+54. number.<error>
+55. _<number>
+56. _<invalid>
+57. _size>20
+58. .<invalid>
+59. Invalid Boolean operator
+60. Invalid ID size
+**/
